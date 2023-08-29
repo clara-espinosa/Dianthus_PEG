@@ -1,15 +1,14 @@
-library(tidyverse);library(zoo);library(dplyr)
+library(tidyverse);library(zoo);library(dplyr);library (lubridate)
 
 ###dataframe ####
 read.csv("data/WP_gooddata_villa.csv", sep = ";") -> microlog_df 
-microog_df
+microlog_df
 str(microlog_df)
 
-################ NOT WORKING YET #############
 
 microlog_df %>%
   data.frame() %>%
-  select(micro == "central") %>%
+  dplyr::filter(Micro == "central") %>%
   #filter(!site =="Cañada") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
@@ -20,10 +19,37 @@ microlog_df %>%
   #mutate(Time= as.Date(Time)) %>%
   mutate (site_year = paste (site, Year)) -> df
 
-### growing season determination ####
-read.csv("data/WP_gooddata_picos.csv", sep = ";") %>%
-  rbind(read.csv("data/WP_gooddata_villa.csv", sep = ";")) %>%
-  select(!sensor3) %>%
+# indices calculation NO FILTERED with data ibuttons!
+read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
+  mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% 
+  mutate(Time = as.POSIXct(Time, tz = "UTC")) %>%
+  dplyr::filter(Micro == "central") %>%
+  #merge(read.csv("data/Dianthus_header.csv", sep =";")) %>%
+  group_by(Site, Day = lubridate::floor_date(Time, "day")) %>%
+  summarise(T = mean(Temperature), X = max(Temperature), N = min(Temperature), n = length(Time)) %>% # Daily mean, max, min
+  mutate(Snow = ifelse(X < 0.5 & N > -0.5, 1, 0)) %>% # Day is snow day or not
+  mutate(FreezeThaw = ifelse(X > 0.5 & N < -0.5, 1, 0)) %>% # Day with freeze-thaw cycles
+  mutate(FDD = ifelse(T < 0, T, 0)) %>% # Freezing degrees per day
+  mutate(GDD = ifelse(T >= 5, T, 0)) %>% # Growing degrees day per month https://link.springer.com/article/10.1007/s00035-021-00250-1
+  group_by(ite, Month = lubridate::floor_date(Day, "month")) %>%
+  summarise(T = mean(T), X = mean(X), N = mean(N), # Daily mean, max, min
+            Snow = sum(Snow), # Snow days per month
+            FreezeThaw = sum(FreezeThaw), # Freeze-thaw days per month
+            FDD = sum(FDD), # FDD per month
+            GDD = sum(GDD)) %>% # GDD per month
+  group_by(Site,) %>%
+  summarise(bio1 = mean(T), # Annual Mean Temperature
+            bio2 = mean(X - N), # Mean Diurnal Range (Mean of monthly (max temp - min temp))
+            bio7 = max(X) - min(N), # Temperature Annual Range (BIO5-BIO6)
+            Snw = sum(Snow),
+            FDD = abs(sum(FDD)), # FDD per year
+            GDD = sum(GDD)) -> # GDD per year
+  dianthus_bioclim
+
+dianthus_bioclim %>% write.csv("results/dianthus_bioclim_ibuttons.csv", row.names = FALSE)
+
+###############    growing season determination #####################
+read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   #filter(!site =="Canada") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
@@ -41,7 +67,7 @@ read.csv("data/WP_gooddata_picos.csv", sep = ";") %>%
   group_by(community, site, Year) %>% #separate x year
   summarise(GS_start = first (Day), GS_end = last(Day), # get the first and last day of the growing season
             data_start = first(data_start), data_end = last(data_end )) %>% 
-  mutate (GS_length = diffTime(GS_end , GS_start, units = "days")) %>%
+  mutate (GS_length = difftime(GS_end , GS_start, units = "days")) %>%
   mutate (data_days = data_end - data_start) %>%
   mutate (site_year = paste (site, Year))-> grow #length of growing season in days
 
@@ -69,8 +95,11 @@ grow %>%
         axis.title.y = element_text (size=16), 
         axis.title.x = element_text (size=16))
 # scale_color_manual (values = c("#AC1926", "#891171", "#33407D", "#077395", "#00BC7F", "#AADB41", "#FDE333"))
-##### WP traits during growing season (ONLY FOR WHOLE YEAR DATA?)#####
-# function to filter for growing season 
+
+
+###################### WP traits during growing season (ONLY FOR WHOLE YEAR DATA?) #################
+
+# function to filter for growing season  (NOW NOT WORKING PROPERLY)
 GS_filter <-function (grow) {
   grow %>%
     pull (site_year)%>%
@@ -85,9 +114,7 @@ GS_filter <-function (grow) {
     filter(Time >= date1 & Time <= date2)  
 }
 
-read.csv("data/WP_gooddata_picos.csv", sep = ";") %>%
-  rbind(read.csv("data/WP_gooddata_villa.csv", sep = ";")) %>%
-  select(!sensor3) %>%
+read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
   mutate(Year = lubridate::year(Time)) %>% 
@@ -115,7 +142,7 @@ read.csv("data/WP_gooddata_picos.csv", sep = ";") %>%
             hour_stress = sum(hour_stress), WPtotal = sum(WPtotal)) %>%
   mutate (WS_length = diffTime(WS_end , WS_start, units = "days")) -> WP_traits
 
-write.csv(WP_traits, "data/WP_traits.csv")
+
 library (viridis)
 WP_traits %>%
   mutate (community = as.factor(community), 
@@ -139,9 +166,7 @@ WP_traits %>%
         axis.title.x = element_text (size=16))
 
 ### get mean value x day across years####
-read.csv("data/WP_gooddata_picos.csv", sep = ";") %>%
-  rbind(read.csv("data/WP_gooddata_villa.csv", sep = ";")) %>%
-  select(!sensor3) %>%
+read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
   mutate(Year = lubridate::year(Time)) %>% 

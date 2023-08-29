@@ -1,15 +1,15 @@
-Species;ID;Site;Aspect;Longitude;Latitude;Elevation;Soil;Rock;Vasculars;NonVasculars
-Dianthus langeanus;A00;Rabinalto;central;-6.110191;42.89682;2109.32;10;15;70;5
-Dianthus langeanus;A02;Rabinalto;S;-6.110207;42.896643;2105.92;30;30;40;0
-Dianthus langeanus;A11;Rabinalto;E;-6.110075;42.896819;2105.72;5;10;80;5
-Dianthus langeanus;B00;Cañada;central;-6.1032588;42.89233274;2116;5;20;74;1
-Dianthus langeanus;B03;Cañada;S;-6.103295;42.892081;2149.37;1;80;19;0
-Dianthus langeanus;B07;Cañada;N;-6.103244;42.892512;2151.9;3;10;82;5
-Dianthus langeanus;B17;Cañada;W;-6.103479;42.892339;2149.35;25;10;64;1
-Dianthus langeanus;B20;Cañada;W;-6.103823;42.892356;2139.71;15;5;65;10
-Dianthus langeanus;C00;Solana;central;-6.07522032;42.89997322;2120;20;15;60;5
-Dianthus langeanus;C06;Solana;N;-6.0751708;42.8998055;2121.94;5;5;80;10
-Dianthus langeanus;C19;Solana;W;-6.075671;42.899743;2109.53;5;15;75;5
-Dianthus langeanus;D00;Penouta;central;-6.061585;42.906362;2103.02;20;5;65;10
-Dianthus langeanus;D12;Penouta;E;-6.061336;42.906363;2103.83;5;25;70;0
-Dianthus langeanus;D19;Penouta;W;-6.062032;42.906393;2091.32;0;1;60;39
+species;ID;site;aspect;lon;lat;alt;soil;rock;vasculars;nonvasculars;abundance
+Dianthus langeanus;A00;Rabinalto;central;-6.110191;42.89682;2109.32;10;15;70;5;10
+Dianthus langeanus;A02;Rabinalto;S;-6.110207;42.896643;2105.92;30;30;40;0;3
+Dianthus langeanus;A11;Rabinalto;E;-6.110075;42.896819;2105.72;5;10;80;5;10
+Dianthus langeanus;B00;Cañada;central;-6.1032588;42.89233274;2116;5;20;74;1;5
+Dianthus langeanus;B03;Cañada;S;-6.103295;42.892081;2149.37;1;80;19;0;5
+Dianthus langeanus;B07;Cañada;N;-6.103244;42.892512;2151.9;3;10;82;5;3
+Dianthus langeanus;B17;Cañada;W;-6.103479;42.892339;2149.35;25;10;64;1;10
+Dianthus langeanus;B20;Cañada;W;-6.103823;42.892356;2139.71;15;5;65;10;3
+Dianthus langeanus;C00;Solana;central;-6.07522032;42.89997322;2120;20;15;60;5;3
+Dianthus langeanus;C06;Solana;N;-6.0751708;42.8998055;2121.94;5;5;80;10;15
+Dianthus langeanus;C19;Solana;W;-6.075671;42.899743;2109.53;5;15;75;5;15
+Dianthus langeanus;D00;Penouta;central;-6.061585;42.906362;2103.02;20;5;65;10;25
+Dianthus langeanus;D12;Penouta;E;-6.061336;42.906363;2103.83;5;25;70;0;20
+Dianthus langeanus;D19;Penouta;W;-6.062032;42.906393;2091.32;0;1;60;39;15

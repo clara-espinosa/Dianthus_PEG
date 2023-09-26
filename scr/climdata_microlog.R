@@ -24,29 +24,29 @@ read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% 
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>%
   dplyr::filter(Micro == "central") %>%
-  #merge(read.csv("data/Dianthus_header.csv", sep =";")) %>%
+  merge(read.csv("data/Dianthus_header.csv", sep =";")) %>%
   group_by(Site, Day = lubridate::floor_date(Time, "day")) %>%
   summarise(T = mean(Temperature), X = max(Temperature), N = min(Temperature), n = length(Time)) %>% # Daily mean, max, min
   mutate(Snow = ifelse(X < 0.5 & N > -0.5, 1, 0)) %>% # Day is snow day or not
   mutate(FreezeThaw = ifelse(X > 0.5 & N < -0.5, 1, 0)) %>% # Day with freeze-thaw cycles
   mutate(FDD = ifelse(T < 0, T, 0)) %>% # Freezing degrees per day
   mutate(GDD = ifelse(T >= 5, T, 0)) %>% # Growing degrees day per month https://link.springer.com/article/10.1007/s00035-021-00250-1
-  group_by(ite, Month = lubridate::floor_date(Day, "month")) %>%
+  group_by(Site, Month = lubridate::floor_date(Day, "month")) %>%
   summarise(T = mean(T), X = mean(X), N = mean(N), # Daily mean, max, min
             Snow = sum(Snow), # Snow days per month
             FreezeThaw = sum(FreezeThaw), # Freeze-thaw days per month
             FDD = sum(FDD), # FDD per month
             GDD = sum(GDD)) %>% # GDD per month
-  group_by(Site,) %>%
+  group_by(Site) %>%
   summarise(bio1 = mean(T), # Annual Mean Temperature
             bio2 = mean(X - N), # Mean Diurnal Range (Mean of monthly (max temp - min temp))
             bio7 = max(X) - min(N), # Temperature Annual Range (BIO5-BIO6)
             Snw = sum(Snow),
             FDD = abs(sum(FDD)), # FDD per year
             GDD = sum(GDD)) -> # GDD per year
-  dianthus_bioclim
+  dianthus_bioclim_microlog
 
-dianthus_bioclim %>% write.csv("results/dianthus_bioclim_ibuttons.csv", row.names = FALSE)
+dianthus_bioclim_microlog %>% write.csv("results/dianthus_bioclim_microlog.csv", row.names = FALSE)
 
 ###############    growing season determination #####################
 read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%

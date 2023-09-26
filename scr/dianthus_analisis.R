@@ -12,7 +12,8 @@ read.csv ("data/dianthus_germ_data.csv", sep= ";") %>%
           WP_treatment = as.numeric (WP_treatment), 
           sowing_time = as.factor (sowing_time)) %>%
   na.omit %>% 
-  filter (WP_treatment >= -1.2) -> df
+  filter(sowing_time =="Immediate_sowing")%>%
+  dplyr::filter (WP_treatment >= -1.2) -> df
 str(df) 
 
 # create physiodata object

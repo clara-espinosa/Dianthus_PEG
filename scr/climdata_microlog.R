@@ -45,6 +45,10 @@ read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
             FDD = abs(sum(FDD)), # FDD per year
             GDD = sum(GDD)) -> # GDD per year
   dianthus_bioclim_microlog
+dianthus_bioclim_microlog %>%
+  mutate(ID = c("B00", "D00", "A00", "C00"))%>%
+  mutate (ID = as.factor (ID))%>%
+  rename(site = Site)-> dianthus_bioclim_microlog
 
 dianthus_bioclim_microlog %>% write.csv("results/dianthus_bioclim_microlog.csv", row.names = FALSE)
 

@@ -5,8 +5,8 @@ Sys.setlocale("LC_TIME", "English")
 read.csv("data/Dianthus_header.csv", sep =";") %>%
   filter(ID %in% c("A00", "A02", "A11",
                    "B00", "B03", "B07", "B17", "B19","B20", 
-                   "C00", "C06", "C19","C20",
-                   "D00", "D12", "D19")) %>%
+                   "C00", "C06", "C18", "C19","C20",
+                   "D00", "D11", "D12", "D19")) %>%
   pull(ID) -> dianthusplots
 
 # visualization data ibuttons

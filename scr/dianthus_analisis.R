@@ -1,6 +1,7 @@
 library(tidyverse)
 library (seedr)
 library (stringr)
+
 ##### IMEMDIATE SOWING DATA + PLEIMINARY ANALYSIS #####
 #load data + transformation data
 read.csv ("data/dianthus_germ_data.csv", sep= ";") %>%

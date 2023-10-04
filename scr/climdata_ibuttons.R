@@ -17,7 +17,7 @@ read.csv("data/temperature_ibuttons.csv", sep =";") %>%
   merge(read.csv("data/dianthus_header.csv", sep= ";")) %>%
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
   ggplot(aes(Time, Temperature, color = ID)) + 
-  facet_wrap(ID ~ site, nrow = 2 ) + 
+  facet_wrap(ID ~ site, nrow = 5) + 
   geom_hline(yintercept = 0, linetype = "dashed") +
   geom_line() +
   xlab("Time (4-h recording inverval)") +

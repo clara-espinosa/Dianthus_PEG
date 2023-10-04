@@ -31,9 +31,10 @@ ind_immediate %>%
   merge(bioclim)-> graph
 str(graph)
   
-ggplot (graph, aes(x=ID, y= grp, color= WP_treatment)) +
+ggplot (graph, aes(x=GDD, y= grp, color= WP_treatment)) +
   geom_point()+
-  geom_smooth(method = "lm", se=FALSE, level = 0.9)
+  geom_smooth(method = "lm", se=FALSE, level = 0.9)+
+  labs( title= "Final germination per GDD")
  
  
  

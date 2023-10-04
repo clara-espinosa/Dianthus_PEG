@@ -2,11 +2,11 @@ library(tidyverse)
 library (seedr)
 library (stringr)
 
-##### IMEMDIATE SOWING DATA + PLEIMINARY ANALYSIS #####
+##### IMEMDIATE SOWING DATA + PREELIMINARY ANALYSIS #####
 #load data + transformation data
 read.csv ("data/dianthus_germ_data.csv", sep= ";") %>%
   mutate(viable = N_seeds - empty - fungus)%>%
-  gather ("days", "germinated", D1:D28)%>% #transform from wide to long format
+  gather ("days", "germinated", D0:D28)%>% #transform from wide to long format
   mutate (days = gsub("D", "", days)) %>% # remove "D" from time column
   mutate (days = as.numeric(days),
           ID = as.factor (ID), 
@@ -42,6 +42,45 @@ plot(o1)
 immediate_bwpsummary <- summary(o1)
 write.csv(immediate_bwpsummary, "results/dianthus_immediate_bwpsummary.csv")
 o1
+
+#exploratory viasualization
+x11()
+str(immediate_germsummary) 
+immediate_germsummary%>%
+  mutate(treatment = factor(treatment))%>%
+  mutate(treatment = fct_relevel(treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
+  as.data.frame ()-> graph
+str(graph)  
+
+#final germination x treatment x ID graph
+ggplot(graph) +
+  geom_point(aes(x= treatment, y =germination.mean, color = treatment), size = 3) +
+  geom_errorbar(aes(x= treatment, ymin = germination.lower, ymax = germination.upper, color = treatment),width = 0.2, size =1.2) +
+  facet_wrap(~ ID, ncol =3 )
+
+# cumulative germination curve with ggplot
+df%>%
+  mutate(WP_treatment = factor(WP_treatment))%>%
+  mutate(WP_treatment = fct_relevel(WP_treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
+  select(ID, WP_treatment, petri,viable,  days, germinated)%>%
+  group_by( WP_treatment, days)%>% #ID,
+  summarise(viable = sum(viable), germinated = sum(germinated))%>%
+  mutate(cumsum= cumsum(germinated))%>%
+  mutate(germPER = (cumsum/viable)*100)%>%
+  #filter(ID=="A00") %>%
+  ggplot(aes(x=days, y=germPER, group = WP_treatment, color= WP_treatment))+
+  geom_line(size = 2.5) 
+#base water potential
+immediate_bwpsummary %>%
+  merge(read.csv("data/Dianthus_header.csv", sep = ";"))%>%
+  merge(bioclim, by= c("ID", "site")) %>%
+  as.data.frame()-> graph
+str(graph)
+
+ggplot (graph, aes(x=FDD, y= psib50)) +
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE, level = 0.9)+
+  labs( title= "WPb per GDD")
 
 ###### TEST FOR AFTER_RIPENNING GERMINATION DATA #####
 read.csv ("data/dianthus_germ_data.csv", sep= ";") %>%

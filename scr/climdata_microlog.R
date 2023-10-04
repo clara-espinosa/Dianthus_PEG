@@ -17,7 +17,7 @@ microlog_df %>%
   mutate(Day = lubridate::day(Time)) %>% 
   mutate(Hour = lubridate::hour(Time)) %>% 
   #mutate(Time= as.Date(Time)) %>%
-  mutate (site_year = paste (site, Year)) -> df
+  mutate (site_year = paste (Site, Year)) -> df
 
 # indices calculation NO FILTERED with data ibuttons!
 read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
@@ -52,7 +52,7 @@ dianthus_bioclim_microlog %>%
 
 dianthus_bioclim_microlog %>% write.csv("results/dianthus_bioclim_microlog.csv", row.names = FALSE)
 
-###############    growing season determination #####################
+############### growing season determination #####################
 read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   #filter(!site =="Canada") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable

@@ -1,7 +1,20 @@
 library(tidyverse)
 library (seedr)
 library (stringr)
+library (rstatix) # paquete para la funci?n get_summary_stats
 
+
+# seed mass subpopulations variability 
+read.csv("data/50_seeds_weight.csv", sep = ";") ->seed_mass
+str(seed_mass)
+seed_mass%>%
+  mutate(ID= as.factor(ID))%>%
+  filter(species == "Dianthus langeanus")%>%
+  mutate(seed_weight= weight/num_seeds)%>%
+  group_by(ID)%>%
+  get_summary_stats(seed_weight)-> summary_seedmass
+  
+write.csv(summary_seedmass, "results/summary_seed_mass.csv")
 ##### IMEMDIATE SOWING DATA + PREELIMINARY ANALYSIS #####
 #load data + transformation data
 read.csv ("data/dianthus_germ_data.csv", sep= ";") %>%

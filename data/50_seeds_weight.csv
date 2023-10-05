@@ -1,4 +1,4 @@
-Species;ID;replicate;num_seeds;50_weight
+species;ID;replicate;num_seeds;weight
 Dianthus langeanus;A00;1;50;75.34
 Dianthus langeanus;A00;2;50;57.08
 Dianthus langeanus;A00;3;50;56.25

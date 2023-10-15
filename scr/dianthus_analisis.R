@@ -154,7 +154,7 @@ df2%>%
   mutate(WP_treatment = fct_relevel(WP_treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
   select(ID, WP_treatment, petri,N_seeds,  days, germinated)%>%
   group_by( WP_treatment, days)%>% #ID,
-  summarise(viable = sum(N_seeds), germinated = sum(germinated))%>%
+  summarise(N_seeds = sum(N_seeds), germinated = sum(germinated))%>%
   mutate(cumsum= cumsum(germinated))%>%
   mutate(germPER = (cumsum/N_seeds)*100)%>%
   #filter(ID=="A00") %>%

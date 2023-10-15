@@ -14,6 +14,7 @@ rbind(dianthus_bioclim_ibuttons, dianthus_bioclim_microlog) -> bioclim
    dplyr::select (ID, WP_treatment, petri, viable, D1:D28)%>% 
    mutate(across(c(ID, WP_treatment), as.factor))-> GermR
 str(GermR)
+
 #After ripened
 read.csv ("data/dianthus_151023AR.csv") %>%
   filter(sowing_time =="After_ripening")%>%

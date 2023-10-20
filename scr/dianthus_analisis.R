@@ -126,8 +126,9 @@ ggplot (graph, aes(x=GDD, y= psib50)) +
   labs( title= "WPb per GDD")
 
 ###### TEST FOR AFTER_RIPENNING GERMINATION DATA #####
-read.csv ("data/dianthus_germ_data.csv", sep= ";") %>%
-  gather ("days", "germinated", D1:D28)%>% #transform from wide to long format
+read.csv ("data/dianthus_151023AR.csv") %>%
+#read.csv ("data/dianthus_germ_data.csv", sep= ";") %>%
+  gather ("days", "germinated", D1:D13)%>% #transform from wide to long format
   mutate (days = gsub("D", "", days)) %>% # remove "D" from time column
   mutate (days = as.numeric(days),
           ID = as.factor (ID), 
@@ -235,6 +236,46 @@ rbind(immediate_bwpsummary, after_bwpsummary)%>%
          legend.title = element_text(size = 20),
          legend.text = element_text (size =16))
   
+
+#exploratory viasualization
+x11()
+str(after_germsummary) 
+after_germsummary%>%
+  mutate(treatment = factor(treatment))%>%
+  mutate(treatment = fct_relevel(treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
+  as.data.frame ()-> graph
+str(graph)  
+
+#final germination x treatment x ID graph
+ggplot(graph) +
+  geom_point(aes(x= treatment, y =germination.mean, color = treatment), size = 3) +
+  geom_errorbar(aes(x= treatment, ymin = germination.lower, ymax = germination.upper, color = treatment),width = 0.2, size =1.2) +
+  facet_wrap(~ ID, ncol =3 )
+
+# cumulative germination curve with ggplot
+df2%>%
+  mutate(WP_treatment = factor(WP_treatment))%>%
+  mutate(WP_treatment = fct_relevel(WP_treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
+  select(ID, WP_treatment, petri,N_seeds,  days, germinated)%>%
+  group_by( WP_treatment, days)%>% #ID,
+  summarise(N_seeds = sum(N_seeds), germinated = sum(germinated))%>%
+  mutate(cumsum= cumsum(germinated))%>%
+  mutate(germPER = (cumsum/N_seeds)*100)%>%
+  #filter(ID=="A00") %>%
+  ggplot(aes(x=days, y=germPER, group = WP_treatment, color= WP_treatment))+
+  geom_line(size = 2.5) 
+#base water potential
+immediate_bwpsummary %>%
+  merge(read.csv("data/Dianthus_header.csv", sep = ";"))%>%
+  merge(bioclim, by= c("ID", "site")) %>%
+  as.data.frame()-> graph
+str(graph)
+
+ggplot (graph, aes(x=FDD, y= psib50)) +
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE, level = 0.9)+
+  labs( title= "WPb per GDD")
+
 
 ######## EDU EXTRA ANALYSIS #######
 # Populations with positive Wb!!

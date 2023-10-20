@@ -5,20 +5,6 @@ read.csv("data/WP_gooddata_villa.csv", sep = ";") -> microlog_df
 microlog_df
 str(microlog_df)
 
-
-microlog_df %>%
-  data.frame() %>%
-  dplyr::filter(Micro == "central") %>%
-  #filter(!site =="Cañada") %>%
-  mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
-  mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
-  mutate(Year = lubridate::year(Time)) %>% 
-  mutate(Month = lubridate::month(Time)) %>% 
-  mutate(Day = lubridate::day(Time)) %>% 
-  mutate(Hour = lubridate::hour(Time)) %>% 
-  #mutate(Time= as.Date(Time)) %>%
-  mutate (site_year = paste (Site, Year)) -> df
-
 # indices calculation NO FILTERED with data ibuttons!
 read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% 
@@ -45,14 +31,53 @@ read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
             FDD = abs(sum(FDD)), # FDD per year
             GDD = sum(GDD)) -> # GDD per year
   dianthus_bioclim_microlog
-dianthus_bioclim_microlog %>%
-  mutate(ID = c("B00", "D00", "A00", "C00"))%>%
-  mutate (ID = as.factor (ID))%>%
-  rename(site = Site)-> dianthus_bioclim_microlog
 
 dianthus_bioclim_microlog %>% write.csv("results/dianthus_bioclim_microlog.csv", row.names = FALSE)
 
-############### growing season determination #####################
+# indices calculation FILTERED with data ibuttons!
+read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
+  mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% 
+  mutate(Time = as.POSIXct(Time, tz = "UTC")) %>%
+  mutate(Year = lubridate::year(Time)) %>%
+  mutate(Month = lubridate::month(Time)) %>% 
+  mutate(Day = lubridate::day(Time)) %>% 
+  mutate(Hour = lubridate::hour(Time)) %>% 
+  dplyr::filter(Micro == "central") %>%
+  filter(!Site =="Cañada") %>%
+  filter(!Year %in% 2023)%>%
+  filter (! (Year %in% 2022 & Month > 6))%>%
+  filter(Hour %in% c(0, 4, 8, 12, 16, 20)) %>% # Keep same recording hours as ibuttons
+  filter(! Month %in% 6) %>% # Remove missing September days
+  filter(! (Month %in% 5 & Day > 29)) %>% # Remove missing May days
+  filter(! (Month %in% 7 & Day < 12)) %>% # Remove missing July days 
+  merge(read.csv("data/Dianthus_header.csv", sep =";")) %>%
+  group_by(Site, Day = lubridate::floor_date(Time, "day")) %>%
+  summarise(T = mean(Temperature), X = max(Temperature), N = min(Temperature), n = length(Time)) %>% # Daily mean, max, min
+  mutate(Snow = ifelse(X < 0.5 & N > -0.5, 1, 0)) %>% # Day is snow day or not
+  mutate(FreezeThaw = ifelse(X > 0.5 & N < -0.5, 1, 0)) %>% # Day with freeze-thaw cycles
+  mutate(FDD = ifelse(T < 0, T, 0)) %>% # Freezing degrees per day
+  mutate(GDD = ifelse(T >= 5, T, 0)) %>% # Growing degrees day per month https://link.springer.com/article/10.1007/s00035-021-00250-1
+  group_by(Site, Month = lubridate::floor_date(Day, "month")) %>%
+  summarise(T = mean(T), X = mean(X), N = mean(N), # Daily mean, max, min
+            Snow = sum(Snow), # Snow days per month
+            FreezeThaw = sum(FreezeThaw), # Freeze-thaw days per month
+            FDD = sum(FDD), # FDD per month
+            GDD = sum(GDD)) %>% # GDD per month
+  group_by(Site) %>%
+  summarise(bio1 = mean(T), # Annual Mean Temperature
+            bio2 = mean(X - N), # Mean Diurnal Range (Mean of monthly (max temp - min temp))
+            bio7 = max(X) - min(N), # Temperature Annual Range (BIO5-BIO6)
+            Snw = sum(Snow),
+            FDD = abs(sum(FDD)), # FDD per year
+            GDD = sum(GDD))%>%
+  mutate(ID= c("D00", "A00", "C00"))%>%
+  mutate(Site = as.factor(Site)) %>%
+  rename(site= Site)-> # GDD per year
+  dianthus_bioclim_microlog
+
+dianthus_bioclim_microlog %>% write.csv("results/dianthus_bioclim_microlog_filtered.csv", row.names = FALSE)
+
+###############    growing season determination #####################
 read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   #filter(!site =="Canada") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
@@ -169,7 +194,7 @@ WP_traits %>%
         axis.title.y = element_text (size=16), 
         axis.title.x = element_text (size=16))
 
-### get mean value x day across years####
+### get mean climograma villa from Penauta and Rabinalto central####
 read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
@@ -177,32 +202,28 @@ read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate(Month = lubridate::month(Time)) %>% 
   mutate(Day = lubridate::day(Time)) %>% 
   mutate(Hour = lubridate::hour(Time)) %>% 
-  mutate (site_year = paste (site, Year)) %>%
-  merge(grow) %>%
-  filter (! (data_days <300)) %>% # 300 to include data from PICOS in 2019 (check calendar in github)
-  group_by(community, site, Year) %>%
-  do (GS_filter(.)) %>% # filter data for only growing season
+  mutate (site_year = paste (Site, Year)) %>%
+  dplyr::filter(Micro == "central") %>%
+  filter(!Site =="Cañada") %>%
   mutate(WP = rowMeans((cbind(sensor1, sensor2)))) %>% 
-  select(! c(micro, sensor1, sensor2)) %>% 
-  group_by(community, site, Year, Month, Day) %>%
-  summarise(T = mean(temperature), X = max(temperature), N = min(temperature), n = length(Time), 
-            WPmean = mean(WP), WPmax = max(WP), WPmin = min (WP)) %>% # Daily mean, max, min
-  #mutate(stress = ifelse(WPmax >=14, 1, 0)) %>% # Day with water stress stress=1
-  #mutate (daily_Trange = X-N) %>% #daily temperature range
-  group_by(community, site, Year, Month) %>%
-  summarise(T = mean(T), X = mean(X), N = mean(N), # Daily mean, max, min
-            WPmean = mean(WPmean), WPmax = max(WPmax), WPmin = min (WPmin)) %>% 
-  group_by(community, site, Year, Month) %>%
-  summarise_all(mean, na.rm = TRUE) -> year_month_site_GS
+  select(! c(Micro, sensor1, sensor2)) %>% 
+  group_by(Community, Site, Month, Day) %>%
+  summarise(T = mean(Temperature), X = max(Temperature), N = min(Temperature), n = length(Time), 
+            WPmean = mean(WP), WPmax = mean(WP), WPmin = mean (WP)) %>%
+  group_by(Community, Site, Month) %>%
+  summarise(T = mean(T), X = max(X), N = min(N), 
+            WPmean = mean(WPmean), WPmax = max(WPmax), WPmin = min (WPmin))-> villa_clima
 x11()
-ggplot(year_month_site_GS) +
-  geom_line (aes (x=Month, y=N, colour = site), size =1.25) + #order for sort as experiment
-  geom_line (aes (x=Month, y=X, colour = site), size =1.25) + 
-  geom_ribbon (aes (x=Month, ymin =N, ymax=X, colour = site, fill = site), alpha =0.2) + 
-  scale_x_continuous (limits = c(3,11), breaks = seq (3, 11, by= 1))+
-  facet_grid(~Year) +
-  scale_fill_viridis (discrete=TRUE) +
-  scale_color_viridis (discrete = TRUE) +
+ggplot(villa_clima) +
+  geom_line (aes (x=Month, y=N, group = Site, colour = Site), size =1.25) + 
+  geom_line (aes (x=Month, y=X, group = Site, colour = Site), size =1.25) + 
+  geom_ribbon (aes (x=Month, ymin =N, ymax=X, group = Site, colour = Site, fill = Site), alpha =0.2) + 
+  geom_line (aes (x= Month, y=WPmax, group = Site), colour = "purple", size =1.25)+
+  scale_x_continuous (limits = c(1,12), breaks = seq (1, 12, by= 1))+
+  facet_grid(~Site) +
+  geom_hline(yintercept=14.5, linetype ="dashed", size =1, colour = "red")+
+  #scale_fill_viridis (discrete=TRUE) +
+  #scale_color_viridis (discrete = TRUE) +
   #geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "red") +
   theme_classic(base_size = 16) +
   theme (plot.title = element_text ( size = 30), #hjust = 0.5,
@@ -210,22 +231,6 @@ ggplot(year_month_site_GS) +
          axis.title.x = element_text (size=18), 
          legend.title = element_text(size = 20),
          legend.text = element_text (size =16)) +
-  labs (title = "Temperature range during growing season", y= "temperature ºC", x = "Month") 
+  labs (title = "", y= "temperature ºC", x = "Month") 
 
-ggplot(year_month_site_GS) +
-  geom_line (aes (x= Month, y= WPmean, colour = site), size = 1.25) +
-  #geom_line (aes (x=Month, y=WPmin, colour = site), size =1.25) + #order for sort as experiment
-  #geom_line (aes (x=Month, y=WPmax, colour = site), size =1.25) + 
-  #geom_ribbon (aes (x=Month, ymin =WPmin, ymax=WPmax, colour = site, fill = site), alpha =0.2) + 
-  scale_x_continuous (limits = c(3,11), breaks = seq (3, 11, by= 1))+
-  scale_fill_viridis (discrete=TRUE) +
-  scale_color_viridis (discrete = TRUE) +
-  facet_grid(~Year) +
-  geom_hline(yintercept=14, linetype ="dashed", size =1, colour = "red") +
-  theme_classic(base_size = 16) + 
-  theme (plot.title = element_text ( size = 30), #hjust = 0.5,
-         axis.title.y = element_text (size=18), 
-         axis.title.x = element_text (size=18), 
-         legend.title = element_text(size = 20),
-         legend.text = element_text (size =16)) +
-  labs (title = "Mean Water Potential during growing season", y= "WP", x = "Month") 
+

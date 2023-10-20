@@ -55,7 +55,7 @@ pca1$var
 
 ### Save figure
 
-ggsave(S2, file = "results/figures/S2- PCA of the bioclimatic indices.png", 
+ggsave(S2, file = "results/figures/S2- PCA of the bioclimatic indices filtered.png", 
        path = NULL, scale = 1, width = 182, height = 120, units = "mm", dpi = 600)
 # ggsave(f1, file = "results/figures/pca-temperatures.tiff", device = grDevices::tiff, 
 #        path = NULL, scale = 1, width = 182, height = 182, units = "mm", dpi = 600, compression = "lzw")

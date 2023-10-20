@@ -4,7 +4,7 @@ library (stringr)
 library (rstatix) # paquete para la funci?n get_summary_stats
 
 
-# seed mass subpopulations variability 
+##### seed mass subpopulations variability #####
 read.csv("data/50_seeds_weight.csv", sep = ";") ->seed_mass
 str(seed_mass)
 seed_mass%>%
@@ -12,9 +12,22 @@ seed_mass%>%
   filter(species == "Dianthus langeanus")%>%
   mutate(seed_weight= weight/num_seeds)%>%
   group_by(ID)%>%
-  get_summary_stats(seed_weight)-> summary_seedmass
+  get_summary_stats(seed_weight)%>%
+  as.data.frame()-> summary_seedmass
+str(summary_seedmass)
   
 write.csv(summary_seedmass, "results/summary_seed_mass.csv")
+
+ggplot(summary_seedmass, aes(x= ID, y =mean, ymin = min, ymax = max, color = ID))+
+  geom_point( size = 3) +
+  geom_errorbar (width = 0.2, size =1.2)
+
+summary_seedmass %>%
+  merge(bioclim)%>%
+  ggplot(aes(x=GDD, y=mean)) +
+  geom_point()+
+  geom_smooth()
+  
 ##### IMEMDIATE SOWING DATA + PREELIMINARY ANALYSIS #####
 #load data + transformation data
 read.csv ("data/dianthus_germ_data.csv", sep= ";") %>%
@@ -56,7 +69,7 @@ immediate_bwpsummary <- summary(o1)
 write.csv(immediate_bwpsummary, "results/dianthus_immediate_bwpsummary.csv")
 o1
 
-#exploratory viasualization
+#exploratory visualization
 x11()
 str(immediate_germsummary) 
 immediate_germsummary%>%
@@ -68,8 +81,17 @@ str(graph)
 #final germination x treatment x ID graph
 ggplot(graph) +
   geom_point(aes(x= treatment, y =germination.mean, color = treatment), size = 3) +
-  geom_errorbar(aes(x= treatment, ymin = germination.lower, ymax = germination.upper, color = treatment),width = 0.2, size =1.2) +
-  facet_wrap(~ ID, ncol =3 )
+  #geom_errorbar(aes(x= treatment, ymin = germination.lower, 
+                   # ymax = germination.upper, color = treatment),width = 0.2, size =1.2)  +
+  coord_cartesian(ylim = c(0,1))+
+  theme_minimal(base_size = 16) +
+  theme (plot.title = element_text ( size = 30), #hjust = 0.5,
+         axis.title.y = element_text (size=18), 
+         axis.title.x = element_text (size=18), 
+         legend.title = element_text(size = 20),
+         legend.text = element_text (size =16))+
+  labs (title = "Immediate sowing", y= "Mean Germination", x = "WP Treatment") 
+  
 
 # cumulative germination curve with ggplot
 df%>%
@@ -82,15 +104,23 @@ df%>%
   mutate(germPER = (cumsum/viable)*100)%>%
   #filter(ID=="A00") %>%
   ggplot(aes(x=days, y=germPER, group = WP_treatment, color= WP_treatment))+
-  geom_line(size = 2.5) 
+  geom_line(size = 2) +
+  coord_cartesian(ylim = c(0,100))+
+  theme_minimal(base_size = 16) +
+  theme (plot.title = element_text ( size = 30), #hjust = 0.5,
+         axis.title.y = element_text (size=18), 
+         axis.title.x = element_text (size=18), 
+         legend.title = element_text(size = 20),
+         legend.text = element_text (size =16))+
+  labs (title = "", y= "Germination %", x = "Days") 
+
 #base water potential
 immediate_bwpsummary %>%
-  merge(read.csv("data/Dianthus_header.csv", sep = ";"))%>%
-  merge(bioclim, by= c("ID", "site")) %>%
+  merge(bioclim, by= c("ID")) %>%
   as.data.frame()-> graph
 str(graph)
 
-ggplot (graph, aes(x=FDD, y= psib50)) +
+ggplot (graph, aes(x=GDD, y= psib50)) +
   geom_point()+
   geom_smooth(method = "lm", se=FALSE, level = 0.9)+
   labs( title= "WPb per GDD")
@@ -131,6 +161,80 @@ plot(o2)
 after_bwpsummary <- summary(o2)
 write.csv(after_bwpsummary, "results/dianthus_after_bwpsummary.csv")
 o2
+#exploratory visualization
+x11()
+str(after_germsummary) 
+after_germsummary%>%
+  mutate(treatment = factor(treatment))%>%
+  mutate(treatment = fct_relevel(treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
+  as.data.frame ()-> graph
+str(graph)  
+
+#final germination x treatment x ID graph
+ggplot(graph) +
+  geom_point(aes(x= treatment, y =germination.mean, color = treatment), size = 3) +
+  #geom_errorbar(aes(x= treatment, ymin = germination.lower, 
+                    #ymax = germination.upper, color = treatment),width = 0.2, size =1.2)  +
+  coord_cartesian(ylim = c(0,1))+
+  theme_minimal(base_size = 16) +
+  theme (plot.title = element_text ( size = 30), #hjust = 0.5,
+         axis.title.y = element_text (size=18), 
+         axis.title.x = element_text (size=18), 
+         legend.title = element_text(size = 20),
+         legend.text = element_text (size =16))+
+  labs (title = "After-ripening sowing", y= "Mean Germination", x = "WP Treatment")
+# cumulative germination curve with ggplot
+df2%>%
+  mutate(WP_treatment = factor(WP_treatment))%>%
+  mutate(WP_treatment = fct_relevel(WP_treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
+  select(ID, WP_treatment, petri, N_seeds,  days, germinated)%>% #viable,
+  filter(!days>16)%>%
+  group_by(WP_treatment, days)%>% #ID,
+  summarise(viable = sum(N_seeds), germinated = sum(germinated))%>%
+  mutate(cumsum= cumsum(germinated))%>%
+  mutate(germPER = (cumsum/viable)*100)%>%
+  ggplot(aes(x=days, y=germPER, group = WP_treatment, color= WP_treatment))+
+  geom_line(size = 2) +
+  coord_cartesian(ylim = c(0,100))+
+  theme_minimal(base_size = 16) +
+  theme (plot.title = element_text ( size = 30), #hjust = 0.5,
+         axis.title.y = element_text (size=18), 
+         axis.title.x = element_text (size=18), 
+         legend.title = element_text(size = 20),
+         legend.text = element_text (size =16))+
+  labs (title = "", y= "Germination %", x = "Days") 
+
+#base water potential
+after_bwpsummary %>%
+  merge(bioclim, by= c("ID")) %>%
+  as.data.frame()-> graph
+
+str(graph)
+
+ggplot (graph, aes(x=GDD, y= psib50)) +
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE, level = 0.9)+
+  labs( title= "WPb per GDD")
+
+# Visual comparison both sowings data
+after_bwpsummary %>%
+  mutate(sowing = "After_ripening") -> after_bwpsummary
+
+immediate_bwpsummary%>%
+  mutate(sowing = "Immediate") -> immediate_bwpsummary
+rbind(immediate_bwpsummary, after_bwpsummary)%>%
+  merge(read.csv("data/Dianthus_header.csv", sep=";"))%>%
+  filter((Immediate=="Yes" & After_ripening =="Yes"))%>%
+  select(ID, sowing, theta, psib50, sigma, R2)%>%
+  ggplot(aes(x=ID, y= psib50, group=sowing, color=sowing)) +
+  geom_point (size= 3)+
+  theme_minimal(base_size = 16) +
+  theme (plot.title = element_text ( size = 30), #hjust = 0.5,
+         axis.title.y = element_text (size=18), 
+         axis.title.x = element_text (size=18), 
+         legend.title = element_text(size = 20),
+         legend.text = element_text (size =16))
+  
 
 ######## EDU EXTRA ANALYSIS #######
 # Populations with positive Wb!!

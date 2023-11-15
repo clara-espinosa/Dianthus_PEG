@@ -3,7 +3,6 @@ library (seedr)
 library (stringr)
 library (rstatix) # paquete para la funci?n get_summary_stats
 
-
 ##### seed mass subpopulations variability #####
 read.csv("data/50_seeds_weight.csv", sep = ";") ->seed_mass
 str(seed_mass)
@@ -91,7 +90,7 @@ ggplot(graph) +
          legend.title = element_text(size = 20),
          legend.text = element_text (size =16))+
   labs (title = "Immediate sowing", y= "Mean Germination", x = "WP Treatment") 
-  
+ 
 
 # cumulative germination curve with ggplot
 df%>%
@@ -117,6 +116,8 @@ df%>%
 #base water potential
 immediate_bwpsummary %>%
   merge(bioclim, by= c("ID")) %>%
+  merge(summary_seedmass, by= c("ID"))%>%
+  merge(read.csv("data/Dianthus_header.csv"))%>%
   as.data.frame()-> graph
 str(graph)
 
@@ -125,17 +126,20 @@ ggplot (graph, aes(x=GDD, y= psib50)) +
   geom_smooth(method = "lm", se=FALSE, level = 0.9)+
   labs( title= "WPb per GDD")
 
+ggplot(graph, aes(x= mean, y = psib50)) +
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE, level = 0.9)+
+  labs( title= "WPb per seed mass")
 ###### TEST FOR AFTER_RIPENNING GERMINATION DATA #####
-read.csv ("data/dianthus_151023AR.csv") %>%
-#read.csv ("data/dianthus_germ_data.csv", sep= ";") %>%
-  gather ("days", "germinated", D1:D13)%>% #transform from wide to long format
+read.csv ("data/dianthus_germ_data.csv", sep= ";") %>%
+  mutate(viable = N_seeds - empty - fungus)%>%
+  gather ("days", "germinated", D0:D28)%>% #transform from wide to long format
   mutate (days = gsub("D", "", days)) %>% # remove "D" from time column
   mutate (days = as.numeric(days),
           ID = as.factor (ID), 
           WP_treatment = as.numeric (WP_treatment), 
           sowing_time = as.factor (sowing_time))%>%
   filter(sowing_time =="After_ripening")%>%
-  dplyr::select(species, ID, sowing_time, WP_treatment, petri, N_seeds, days, germinated)%>%
   na.omit()-> df2 
 str(df2)
 # create physiodata object
@@ -144,7 +148,7 @@ test_df2 <- physiodata (d = df2, # the name of your data object
                        x = "WP_treatment", # the column with the experimental WP_treatment,
                        groups = c("species", "ID"), # this dataset has X different species/populations
                        g = "germinated", # the column with the number of germinated seeds,
-                       pg = "N_seeds") # the column with the total number of viable seeds
+                       pg = "viable") # the column with the total number of viable seeds
 after_germsummary <- summary(test_df2)
 write.csv(after_germsummary , "results/dianthus_after_germsummary.csv")
 
@@ -156,7 +160,7 @@ o2 <- physiotime (d = df2, # the name of your data object
                   x = "WP_treatment", # the column with the experimental WP_treatment,
                   groups = c("species", "ID"), # this dataset has X different species/populations
                   g = "germinated", # the column with the number of germinated seeds,
-                  pg = "N_seeds")  # the column with the total number of viable seeds
+                  pg = "viable")  # the column with the total number of viable seeds
 
 plot(o2)
 after_bwpsummary <- summary(o2)
@@ -188,10 +192,9 @@ ggplot(graph) +
 df2%>%
   mutate(WP_treatment = factor(WP_treatment))%>%
   mutate(WP_treatment = fct_relevel(WP_treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
-  select(ID, WP_treatment, petri, N_seeds,  days, germinated)%>% #viable,
-  filter(!days>16)%>%
+  select(ID, WP_treatment, petri, viable,  days, germinated)%>% #viable,
   group_by(WP_treatment, days)%>% #ID,
-  summarise(viable = sum(N_seeds), germinated = sum(germinated))%>%
+  summarise(viable = sum(viable), germinated = sum(germinated))%>%
   mutate(cumsum= cumsum(germinated))%>%
   mutate(germPER = (cumsum/viable)*100)%>%
   ggplot(aes(x=days, y=germPER, group = WP_treatment, color= WP_treatment))+
@@ -256,11 +259,11 @@ ggplot(graph) +
 df2%>%
   mutate(WP_treatment = factor(WP_treatment))%>%
   mutate(WP_treatment = fct_relevel(WP_treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
-  select(ID, WP_treatment, petri,N_seeds,  days, germinated)%>%
+  select(ID, WP_treatment, petri,viable,  days, germinated)%>%
   group_by( WP_treatment, days)%>% #ID,
-  summarise(N_seeds = sum(N_seeds), germinated = sum(germinated))%>%
+  summarise(viable = sum(viable), germinated = sum(germinated))%>%
   mutate(cumsum= cumsum(germinated))%>%
-  mutate(germPER = (cumsum/N_seeds)*100)%>%
+  mutate(germPER = (cumsum/viable)*100)%>%
   #filter(ID=="A00") %>%
   ggplot(aes(x=days, y=germPER, group = WP_treatment, color= WP_treatment))+
   geom_line(size = 2.5) 
@@ -271,7 +274,7 @@ immediate_bwpsummary %>%
   as.data.frame()-> graph
 str(graph)
 
-ggplot (graph, aes(x=FDD, y= psib50)) +
+ggplot (graph, aes(x=GDD, y= psib50)) +
   geom_point()+
   geom_smooth(method = "lm", se=FALSE, level = 0.9)+
   labs( title= "WPb per GDD")
@@ -288,14 +291,14 @@ test_df <- physiodata (d = df1, # the name of your data object
                        x = "WP_treatment", # the column with the experimental WP_treatment,
                        groups = c("species", "ID"), # this dataset has X different species/populations
                        g = "germinated", # the column with the number of germinated seeds,
-                       pg = "N_seeds") # the column with the total number of viable seeds
+                       pg = "viable") # the column with the total number of viable seeds
 
 physiotime (d = df1, # the name of your data object
             t = "days", # the column with the scoring days
             x = "WP_treatment", # the column with the experimental WP_treatment,
             groups = c("species", "ID"), # this dataset has X different species/populations
             g = "germinated", # the column with the number of germinated seeds,
-            pg = "N_seeds") -> o1 # the column with the total number of viable seeds
+            pg = "viable") -> o1 # the column with the total number of viable seeds
 
 plot(o1)
 plot(test_df)

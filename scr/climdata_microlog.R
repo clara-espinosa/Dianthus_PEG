@@ -1,11 +1,12 @@
-library(tidyverse);library(zoo);library(dplyr);library (lubridate)
+library(tidyverse);library(zoo); library(dplyr);library (lubridate)
+
 
 ###dataframe ####
 read.csv("data/WP_gooddata_villa.csv", sep = ";") -> microlog_df 
 microlog_df
 str(microlog_df)
 
-# indices calculation NO FILTERED with data ibuttons!
+######  climatic indices calculation NO FILTERED with data ibuttons! #####
 read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% 
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>%
@@ -34,7 +35,7 @@ read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
 
 dianthus_bioclim_microlog %>% write.csv("results/dianthus_bioclim_microlog.csv", row.names = FALSE)
 
-# indices calculation FILTERED with data ibuttons!
+####### indices calculation FILTERED with data ibuttons!######
 read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% 
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>%
@@ -72,14 +73,14 @@ read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
             GDD = sum(GDD))%>%
   mutate(ID= c("D00", "A00", "C00"))%>%
   mutate(Site = as.factor(Site)) %>%
-  rename(site= Site)-> # GDD per year
+  rename(Site= Site)-> # GDD per year
   dianthus_bioclim_microlog
 
 dianthus_bioclim_microlog %>% write.csv("results/dianthus_bioclim_microlog_filtered.csv", row.names = FALSE)
 
 ###############    growing season determination #####################
 read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
-  #filter(!site =="Canada") %>%
+  #filter(!Site =="Canada") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
   mutate(Year = lubridate::year(Time)) %>% 
@@ -87,32 +88,33 @@ read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate(Day = lubridate::day(Time)) %>% 
   mutate(Hour = lubridate::hour(Time)) %>% 
   mutate(WP = rowMeans((cbind(sensor1, sensor2)))) %>% 
-  group_by(community, site, Year, Day = lubridate::floor_date(Time, "day")) %>%
-  summarise(T = mean(temperature)) %>% # Daily mean
+  group_by(Community, Site, Year, Day = lubridate::floor_date(Time, "day")) %>%
+  summarise(T = mean(Temperature)) %>% # Daily mean
   mutate (data_start = first(Day), data_end = last(Day)) %>% # get starting and ending data points x year
   mutate(t5 = ifelse(T>=5, 1, 0))%>% # days with Tmean>= 5 =1
   mutate(length = rollsumr(t5, k = 3, fill= 0)) %>% #sum the 2 previous rows of t5 
   filter(! (length < 3)) %>% # Filter date  with 2 consecutive days with Tmean>5ºC (Körner limit) 
-  group_by(community, site, Year) %>% #separate x year
+  group_by(Community, Site, Year) %>% #separate x year
   summarise(GS_start = first (Day), GS_end = last(Day), # get the first and last day of the growing season
             data_start = first(data_start), data_end = last(data_end )) %>% 
-  mutate (GS_length = difftime(GS_end , GS_start, units = "days")) %>%
+  mutate (GS_length = GS_end - GS_start) %>%
   mutate (data_days = data_end - data_start) %>%
-  mutate (site_year = paste (site, Year))-> grow #length of growing season in days
-
+  mutate (Site_year = paste (Site, Year))%>%
+  #select(Community, Site, Year, data_days, data_start, data_end, GS_length, GS_start, GS_end, Site_year)%>%
+  as.data.frame()-> grow #length of growing season in days
+str(grow)
 library (viridis)
 x11()
 grow %>%
-  mutate (community = as.factor(community), 
-          site = as.factor(site), 
+  mutate (Community = as.factor(Community), 
+          Site = as.factor(Site), 
           Year = as.numeric(Year)) %>%
-  filter (! (data_days <360)) %>% 
-  filter ( Year > 2017)%>%
-  ggplot(aes(x=Year, y=GS_length, color = site, fill = site)) +
+  #filter (! (data_days <260)) %>% 
+  ggplot(aes(x=Year, y=GS_length, color = Site, fill = Site)) +
   geom_bar( stat = "identity", position = position_dodge())  +
   scale_fill_viridis (discrete=TRUE) +
   scale_color_viridis (discrete = TRUE) +
-  labs( title = "Growing season length x site",x = "Year", y = " Growing season (days)") + #
+  labs( title = "Growing season length x Site",x = "Year", y = " Growing season (days)") + #
   #ggthemes::theme_tufte(base_size = 16) +
   theme_classic(base_size = 14) +
   theme(plot.title = element_text (hjust = 0.5, size = 30),
@@ -131,7 +133,7 @@ grow %>%
 # function to filter for growing season  (NOW NOT WORKING PROPERLY)
 GS_filter <-function (grow) {
   grow %>%
-    pull (site_year)%>%
+    pull (Site_year)%>%
     unique() -> unic
   grow  %>%
     pull(GS_start) -> date1 #convierte columna en vector
@@ -139,7 +141,7 @@ GS_filter <-function (grow) {
     pull(GS_end) -> date2
   df %>% 
     mutate (Time = as.Date(Time)) %>%
-    filter(site_year == unic) %>%
+    filter(Site_year == unic) %>%
     filter(Time >= date1 & Time <= date2)  
 }
 
@@ -150,35 +152,39 @@ read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate(Month = lubridate::month(Time)) %>% 
   mutate(Day = lubridate::day(Time)) %>% 
   mutate(Hour = lubridate::hour(Time)) %>% 
-  mutate (site_year = paste (site, Year)) %>%
+  mutate (Site_year = paste (Site, Year)) %>%
   merge(grow) %>%
-  filter (! (data_days <300)) %>% # 300 to include data from PICOS in 2019 (check calendar in github)
-  group_by(community, site, Year) %>%
+  #filter (! (data_days <260)) %>% # 260 to include data from 2022 (check calendar in github)
+  group_by(Community, Site, Year) %>%
   do (GS_filter(.)) %>% # filter data for only growing season
   mutate(WP = rowMeans((cbind(sensor1, sensor2)))) %>% 
-  select(! c(micro, sensor1, sensor2)) %>% 
-  group_by(community, site, Year, Hour = lubridate::floor_date(Time, "hour")) %>%
+  select(! c(sensor1, sensor2)) %>% # micro
+  group_by(Community, Site, Year, Hour = lubridate::floor_date(Time, "hour")) %>%
   mutate(stress = ifelse(WP >=14, 1, 0)) %>% # Hour with water stress 1
-  group_by(community, site, Year, Day = lubridate::floor_date(Time, "day")) %>%
-  summarise(T = mean(temperature), X = max(temperature), N = min(temperature), #n = length(Time), 
+  group_by(Community, Site, Year, Day = lubridate::floor_date(Time, "day")) %>%
+  summarise(T = mean(Temperature), X = max(Temperature), N = min(Temperature), #n = length(Time), 
             WPmean = mean(WP), WPmax = max(WP), WPmin = min (WP), WPtotal = sum(WP), 
             hour_stress = sum(stress)) %>%
   mutate (day_stress = ifelse(hour_stress>=12, 1, 0))%>% # if more than 12 hours with stress = stressed day
   mutate (stress_length = rollsumr(day_stress, k=4, fill = 0))  %>% # sum how many stressed days in the last four days
   filter(! (stress_length < 4)) %>% # filter dates in order to identify the first day with 4 previous days stressed
-  group_by(community, site, Year) %>% #separate x year
+  group_by(Community, Site, Year) %>% #separate x year
   summarise(WS_start = first (Day), WS_end = last(Day), # get the first and last day of the with water stress 
-            hour_stress = sum(hour_stress), WPtotal = sum(WPtotal)) %>%
-  mutate (WS_length = diffTime(WS_end , WS_start, units = "days")) -> WP_traits
+            hour_stress = sum(hour_stress), WPtotal = sum(WPtotal), day_stress = sum(day_stress)) %>%
+  mutate (WS_length = as.Date(WS_end) - as.Date(WS_start)) -> WP_traits
 
+grow%>%
+  merge(WP_traits) %>%
+  write.csv("data/growing season and WP traits.csv")
 
+str(WP_traits)
 library (viridis)
 WP_traits %>%
-  mutate (community = as.factor(community), 
-          site = as.factor(site), 
+  mutate (Community = as.factor(Community), 
+          Site = as.factor(Site), 
           Year = as.numeric(Year)) %>%
   #filter ( Year > 2017)%>%
-  ggplot(aes(x=Year, y=WS_length, color = site, fill = site)) +
+  ggplot(aes(x=Year, y=WS_length, color = Site, fill = Site)) +
   geom_bar( stat = "identity", position = position_dodge())  +
   scale_fill_viridis (discrete=TRUE) +
   scale_color_viridis (discrete = TRUE) +
@@ -202,7 +208,7 @@ read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate(Month = lubridate::month(Time)) %>% 
   mutate(Day = lubridate::day(Time)) %>% 
   mutate(Hour = lubridate::hour(Time)) %>% 
-  mutate (site_year = paste (Site, Year)) %>%
+  mutate (Site_year = paste (Site, Year)) %>%
   dplyr::filter(Micro == "central") %>%
   filter(!Site =="Cañada") %>%
   mutate(WP = rowMeans((cbind(sensor1, sensor2)))) %>% 

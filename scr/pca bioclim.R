@@ -1,12 +1,15 @@
 library(tidyverse);library(zoo);library(dplyr);library (lubridate)
 library(ggrepel)
 # join bioclim data ibuttons + microlog
-rbind(dianthus_bioclim_ibuttons, dianthus_bioclim_microlog) %>%
+dianthus_bioclim_microlog %>%
+  rename(site=Site)%>%
+  rbind(dianthus_bioclim_ibuttons) %>%
   as.data.frame()-> bioclim 
 str(bioclim)
 bioclim %>%
   mutate(across(c(ID, site), as.factor))%>%
-  mutate(site = fct_recode(site, "Penauta" = "Penouta")) ->bioclim
+  select(site, ID, bio1:GDD)%>%
+  mutate(site = fct_recode(site, "Penouta" = "Penauta")) ->bioclim
 
 ### PCA
 
@@ -16,7 +19,7 @@ bioclim[, 3:8] %>%
 cbind((bioclim %>%  dplyr::select(site ,ID)), data.frame(pca1$ind$coord[, 1:2])) %>%
    mutate(site = fct_relevel(site,
                             "Rabinalto", "Cañada",
-                            "Solana", "Penauta"))-> pcaInds
+                            "Solana", "Penouta"))-> pcaInds
 
 pca1$var$coord[, 1:2] %>%
   data.frame %>%

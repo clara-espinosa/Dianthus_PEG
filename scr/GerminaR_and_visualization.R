@@ -25,12 +25,12 @@ str(germ_indices)
 #              MGR - mean germination rate (time units)
 #              SYN - syncronization index (from 0 to 1)
 germ_indices %>%
-  dplyr::select(sowing_ID, WP_treatment, petri, viable, grp, mgr, syn) %>%
+  dplyr::select(sowing_ID, WP_treatment, petri, viable, grs, grp, mgr, syn) %>%
   mutate(WP_treatment = factor(WP_treatment))%>%
   mutate(WP_treatment = fct_relevel(WP_treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
   separate_wider_delim(sowing_ID, delim = " ", names = c("sowing_time", "ID"))%>%
   merge(bioclim, by= c("ID")) %>%
-  merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= c("ID"))->germ_indices   %>%
+  merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= c("ID", "site"))->germ_indices   
   #as.data.frame() %>%
   #mutate_all(~ifelse(is.nan(.), 0, .))  # replace NAN to 0->
 str(germ_indices)

@@ -31,9 +31,9 @@ read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
             Snw = sum(Snow),
             FDD = abs(sum(FDD)), # FDD per year
             GDD = sum(GDD)) -> # GDD per year
-  dianthus_bioclim_microlog
+  dianthus_bioclim_microlog_no_filtered
 
-dianthus_bioclim_microlog %>% write.csv("results/dianthus_bioclim_microlog.csv", row.names = FALSE)
+dianthus_bioclim_microlog_no_filtered %>% write.csv("results/dianthus_bioclim_microlog_no_filtered.csv", row.names = FALSE)
 
 ####### indices calculation FILTERED with data ibuttons!######
 read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
@@ -71,7 +71,7 @@ read.csv("data/WP_gooddata_villa.csv", sep =";") %>%
             Snw = sum(Snow),
             FDD = abs(sum(FDD)), # FDD per year
             GDD = sum(GDD))%>%
-  mutate(ID= c("D00", "A00", "C00"))%>%
+  mutate(ID= c("D00", "A00", "C00"))%>% ##"B00", 
   mutate(Site = as.factor(Site)) %>%
   rename(Site= Site)-> # GDD per year
   dianthus_bioclim_microlog
@@ -80,21 +80,21 @@ dianthus_bioclim_microlog %>% write.csv("results/dianthus_bioclim_microlog_filte
 
 ###############    growing season determination #####################
 read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
-  #filter(!Site =="Canada") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
   mutate(Year = lubridate::year(Time)) %>% 
   mutate(Month = lubridate::month(Time)) %>% 
   mutate(Day = lubridate::day(Time)) %>% 
   mutate(Hour = lubridate::hour(Time)) %>% 
+  dplyr::filter(Micro == "central") %>%
   mutate(WP = rowMeans((cbind(sensor1, sensor2)))) %>% 
-  group_by(Community, Site, Year, Day = lubridate::floor_date(Time, "day")) %>%
+  group_by(Community, Site,  Year, Day = lubridate::floor_date(Time, "day")) %>% #Micro,
   summarise(T = mean(Temperature)) %>% # Daily mean
   mutate (data_start = first(Day), data_end = last(Day)) %>% # get starting and ending data points x year
   mutate(t5 = ifelse(T>=5, 1, 0))%>% # days with Tmean>= 5 =1
   mutate(length = rollsumr(t5, k = 3, fill= 0)) %>% #sum the 2 previous rows of t5 
   filter(! (length < 3)) %>% # Filter date  with 2 consecutive days with Tmean>5ºC (Körner limit) 
-  group_by(Community, Site, Year) %>% #separate x year
+  group_by(Community, Site,  Year) %>% #separate x year   Micro,
   summarise(GS_start = first (Day), GS_end = last(Day), # get the first and last day of the growing season
             data_start = first(data_start), data_end = last(data_end )) %>% 
   mutate (GS_length = GS_end - GS_start) %>%
@@ -139,7 +139,7 @@ GS_filter <-function (grow) {
     pull(GS_start) -> date1 #convierte columna en vector
   grow %>%
     pull(GS_end) -> date2
-  df %>% 
+  df %>% # df needs to be a dataframe with the raw data of data/WP_gooddata_villa.csv
     mutate (Time = as.Date(Time)) %>%
     filter(Site_year == unic) %>%
     filter(Time >= date1 & Time <= date2)  
@@ -153,6 +153,7 @@ read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate(Day = lubridate::day(Time)) %>% 
   mutate(Hour = lubridate::hour(Time)) %>% 
   mutate (Site_year = paste (Site, Year)) %>%
+  dplyr::filter(Micro == "central") %>%
   merge(grow) %>%
   #filter (! (data_days <260)) %>% # 260 to include data from 2022 (check calendar in github)
   group_by(Community, Site, Year) %>%

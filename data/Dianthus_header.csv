@@ -1,19 +1,19 @@
-species;ID;site;aspect;Orientation;UTM 29 E;UTM 29 N;lon;lat;alt;soil;rock;vasculars;nonvasculars;abundance_dianthus;Immediate;After_ripening;iButtons;Microlog_SP3
-Dianthus langeanus;A00;Rabinalto;central;central;735944;4753408;-6.110191;42.89682;2109.32;10;15;70;5;10;Yes;Yes;No;Yes
-Dianthus langeanus;A02;Rabinalto;S;South 2;735944;4753389;-6.110207;42.896643;2105.92;30;30;40;0;3;No;Yes;Yes;No
-Dianthus langeanus;A11;Rabinalto;E;East 1;735954;4753409;-6.110075;42.896819;2105.72;5;10;80;5;10;No;Yes;Yes;No
-Dianthus langeanus;B00;Cañada;central;central;736528;4752930;-6.1032588;42.89233274;2116;5;20;74;1;5;Yes;No;No;Yes
-Dianthus langeanus;B03;Cañada;S;South 3;736526;4752901;-6.103295;42.892081;2149.37;1;80;19;0;5;Yes;Yes;Yes;No
-Dianthus langeanus;B07;Cañada;N;North 2;736528;4752949;-6.103244;42.892512;2151.9;3;10;82;5;3;Yes;No;Yes;Yes
-Dianthus langeanus;B17;Cañada;W;West 2;736510;4752930;-6.103479;42.892339;2149.35;25;10;64;1;10;Yes;No;Yes;No
-Dianthus langeanus;B19;Cañada;W;West 4;736491;4752930;-6.103705;42.892346;2143.53;30;10;60;0;1;No;Yes;Yes;No
-Dianthus langeanus;B20;Cañada;W;West 5;736481;4752931;-6.103823;42.892356;2139.71;15;5;65;10;3;Yes;No;Yes;No
-Dianthus langeanus;C00;Solana;central;central;738789.259;4753831.616;-6.07522032;42.89997322;2120;20;15;60;5;3;Yes;Yes;No;Yes
-Dianthus langeanus;C06;Solana;N;North 1;738789.893;4753841.485;-6.0751708;42.8998055;2121.94;5;5;80;10;15;Yes;No;Yes;No
-Dianthus langeanus;C18;Solana;W;West 3;738761;4753829;-6.075563;42.899727;2113.97;25;10;64;1;5;No;Yes;Yes;Yes
-Dianthus langeanus;C19;Solana;W;West 4;738752;4753830;-6.075671;42.899743;2109.53;5;15;75;5;15;Yes;Yes;Yes;No
-Dianthus langeanus;C20;Solana;W;West 5;738742;4753831;-6.075789;42.89975;2104.9;10;5;75;10;15;No;Yes;Yes;No
-Dianthus langeanus;D00;Penouta;central;central;739876;4754605;-6.061585;42.906362;2103.02;20;5;65;10;25;Yes;Yes;No;Yes
-Dianthus langeanus;D11;Penouta;E;East1;739887;4754606;-6.061453;42.906367;2103.72;10;30;60;0;20;No;Yes;Yes;No
-Dianthus langeanus;D12;Penouta;E;East 2;739896;5754606;-6.061336;42.906363;2103.83;5;25;70;0;20;Yes;No;Yes;Yes
-Dianthus langeanus;D19;Penouta;W;West 4;739839;4754608;-6.062032;42.906393;2091.32;0;1;60;39;15;Yes;Yes;Yes;No
+species,ID,site,aspect,Orientation,UTM 29 E,UTM 29 N,lon,lat,alt,soil,rock,vasculars,nonvasculars,abundance_dianthus,Immediate,After_ripening,iButtons,Microlog_SP3
+Dianthus langeanus,A00,Rabinalto,central,central,735944,4753408,-6.110191,42.89682,2109.32,10,15,70,5,10,Yes,Yes,No,Yes
+Dianthus langeanus,A02,Rabinalto,S,South 2,735944,4753389,-6.110207,42.896643,2105.92,30,30,40,0,3,No,Yes,Yes,No
+Dianthus langeanus,A11,Rabinalto,E,East 1,735954,4753409,-6.110075,42.896819,2105.72,5,10,80,5,10,No,Yes,Yes,No
+Dianthus langeanus,B00,Cañada,central,central,736528,4752930,-6.1032588,42.89233274,2116,5,20,74,1,5,Yes,No,No,Yes
+Dianthus langeanus,B03,Cañada,S,South 3,736526,4752901,-6.103295,42.892081,2149.37,1,80,19,0,5,Yes,Yes,Yes,No
+Dianthus langeanus,B07,Cañada,N,North 2,736528,4752949,-6.103244,42.892512,2151.9,3,10,82,5,3,Yes,No,Yes,Yes
+Dianthus langeanus,B17,Cañada,W,West 2,736510,4752930,-6.103479,42.892339,2149.35,25,10,64,1,10,Yes,No,Yes,No
+Dianthus langeanus,B19,Cañada,W,West 4,736491,4752930,-6.103705,42.892346,2143.53,30,10,60,0,1,No,Yes,Yes,No
+Dianthus langeanus,B20,Cañada,W,West 5,736481,4752931,-6.103823,42.892356,2139.71,15,5,65,10,3,Yes,No,Yes,No
+Dianthus langeanus,C00,Solana,central,central,738789.259,4753831.616,-6.07522032,42.89997322,2120,20,15,60,5,3,Yes,Yes,No,Yes
+Dianthus langeanus,C06,Solana,N,North 1,738789.893,4753841.485,-6.0751708,42.8998055,2121.94,5,5,80,10,15,Yes,No,Yes,No
+Dianthus langeanus,C18,Solana,W,West 3,738761,4753829,-6.075563,42.899727,2113.97,25,10,64,1,5,No,Yes,Yes,Yes
+Dianthus langeanus,C19,Solana,W,West 4,738752,4753830,-6.075671,42.899743,2109.53,5,15,75,5,15,Yes,Yes,Yes,No
+Dianthus langeanus,C20,Solana,W,West 5,738742,4753831,-6.075789,42.89975,2104.9,10,5,75,10,15,No,Yes,Yes,No
+Dianthus langeanus,D00,Penouta,central,central,739876,4754605,-6.061585,42.906362,2103.02,20,5,65,10,25,Yes,Yes,No,Yes
+Dianthus langeanus,D11,Penouta,E,East1,739887,4754606,-6.061453,42.906367,2103.72,10,30,60,0,20,No,Yes,Yes,No
+Dianthus langeanus,D12,Penouta,E,East 2,739896,5754606,-6.061336,42.906363,2103.83,5,25,70,0,20,Yes,No,Yes,Yes
+Dianthus langeanus,D19,Penouta,W,West 4,739839,4754608,-6.062032,42.906393,2091.32,0,1,60,39,15,Yes,Yes,Yes,No

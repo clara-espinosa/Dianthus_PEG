@@ -9,18 +9,23 @@ library(binom);library(effects)
 # el num de semillas germinadas al final = "grs"
 # el num de semillas viables = "viable"
 str(germ_indices)
-a <- glmmTMB(cbind(grs, viable - grs) ~ WP_treatment* sowing_time + (1|site/ID),  family = binomial, data= germ_indices) 
+germ_indices %>%
+  filter(!ID == "C00")-> germ_indices2
+a <- glmmTMB(cbind(grs, viable - grs) ~ WP_treatment* sowing_time + (1|site/ID),  family = binomial, data= germ_indices2) 
 summary(a)# significant interaction term suggest analyzing both sowing times separatey
+          #same results without C00
 
-germ_indices %>%
-  filter(sowing_time == "Immediate") -> germ_ind_im
-a <- glmmTMB(cbind(grs, viable - grs) ~ WP_treatment* GDD+ (1|site/ID),  family = binomial, data= germ_ind_im) 
+germ_indices2 %>%
+  filter(sowing_time == "Immediate") -> germ_ind_im2
+a <- glmmTMB(cbind(grs, viable - grs) ~ WP_treatment* GDD+ (1|site/ID),  family = binomial, data= germ_ind_im2) 
 summary(a) # marginal WP_treatment significant
+           # with out C00 = WP_treatment significant, GDD and interaction marginal
 
-germ_indices %>%
-  filter(sowing_time == "After_ripening") -> germ_ind_af
-a <- glmmTMB(cbind(grs, viable - grs) ~ WP_treatment* GDD+ (1|site/ID),  family = binomial, data= germ_ind_af) 
+germ_indices2 %>%
+  filter(sowing_time == "After_ripening") -> germ_ind_af2
+a <- glmmTMB(cbind(grs, viable - grs) ~ WP_treatment* GDD+ (1|site/ID),  family = binomial, data= germ_ind_af2) 
 summary(a) # WP_treatment significant and GDD marginal (no interaction)
+           # without C00 = WP significant and GDD marginal (no interaction)
 
 # glm para mean germination rate mgr (parecido al base water potential)
 
@@ -36,16 +41,20 @@ hist(bWP_summary$psib50)
 bWP_summary %>%
   merge(bioclim, by= c("ID")) %>%
   merge(summary_seedmass, by= c("ID"))%>%
+  filter(!ID == "C00")%>%
   as.data.frame()-> glm
 a <- glmmTMB(psib50 ~ GDD * sowing_time , family = gaussian,  data= glm) #+ (1|site)
-summary(a)# significant interaction term suggest analyzing both sowing times separatey
+summary(a)# significant interaction term suggest analyzing both sowing times separately
+          # same results without C00
 residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family mets assumptions
 
 glm %>%
   filter(sowing_time == "Immediate")%>%
+  filter(!ID == "C00")%>%
   as.data.frame()-> glm_im
 b <- glmmTMB(psib50 ~ GDD + (1|site), family = gaussian,  data= glm_im) #
-summary(b)# No significant effect of GDD
+summary(b)# No significant effect of GDD 
+          # same results withou C00
 residuals <- simulateResiduals (b) ; plot(residuals)#gaussian family mets assumptions
 
 glm %>%

@@ -1,4 +1,4 @@
-library(tidyverse);library(zoo); library(dplyr);library (lubridate)
+library(tidyverse);library(zoo); library(dplyr);library (lubridate);library(ggpubr)
 
 
 ###dataframe ####
@@ -201,7 +201,7 @@ WP_traits %>%
         axis.title.y = element_text (size=16), 
         axis.title.x = element_text (size=16))
 
-### get mean climograma villa from Penauta and Rabinalto central####
+### get mean climograma villa from Penauta, Rabinalto and Solana central####
 read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
@@ -209,35 +209,93 @@ read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate(Month = lubridate::month(Time)) %>% 
   mutate(Day = lubridate::day(Time)) %>% 
   mutate(Hour = lubridate::hour(Time)) %>% 
-  mutate (Site_year = paste (Site, Year)) %>%
   dplyr::filter(Micro == "central") %>%
   filter(!Site =="Cañada") %>%
+  mutate(site = fct_recode(Site, "Penouta" = "Penauta"))%>%
+  mutate (Site_year = paste (site, Year)) %>%
   mutate(WP = rowMeans((cbind(sensor1, sensor2)))) %>% 
   select(! c(Micro, sensor1, sensor2)) %>% 
-  group_by(Community, Site, Month, Day) %>%
+  group_by(Community, site, Month, Day) %>%
   summarise(T = mean(Temperature), X = max(Temperature), N = min(Temperature), n = length(Time), 
-            WPmean = mean(WP), WPmax = mean(WP), WPmin = mean (WP)) %>%
-  group_by(Community, Site, Month) %>%
-  summarise(T = mean(T), X = max(X), N = min(N), 
-            WPmean = mean(WPmean), WPmax = max(WPmax), WPmin = min (WPmin))-> villa_clima
+            WPmean = mean(WP), WPmax = max(WP), WPmin = max (WP), abs_WP = sum(WP)) %>%
+  mutate(GDD = ifelse(T >= 5, T, 0)) %>%
+  group_by(Community, site, Month) %>%
+  summarise(T = mean(T), X = max(X), N = min(N), abs_WP = sum(abs_WP), GDD = sum(GDD),
+            WPmean = mean(WPmean), WPmax = mean(WPmax), WPmin = mean(WPmin))-> villa_clima
+
+# prueba visualización con doble eje Y y abs WP sum
 x11()
-ggplot(villa_clima) +
-  geom_line (aes (x=Month, y=N, group = Site, colour = Site), size =1.25) + 
-  geom_line (aes (x=Month, y=X, group = Site, colour = Site), size =1.25) + 
-  geom_ribbon (aes (x=Month, ymin =N, ymax=X, group = Site, colour = Site, fill = Site), alpha =0.2) + 
-  geom_line (aes (x= Month, y=WPmax, group = Site), colour = "purple", size =1.25)+
-  scale_x_continuous (limits = c(1,12), breaks = seq (1, 12, by= 1))+
-  facet_grid(~Site) +
-  geom_hline(yintercept=14.5, linetype ="dashed", size =1, colour = "red")+
+villa_clima %>%
+  #mutate(Month = as.factor(Month))%>%
+  group_by(Month)%>%
+  summarise_at(vars(T:WPmin), mean, na.rm = TRUE)%>%
+  ggplot() +
+  geom_col(aes (x= Month, y=abs_WP/400), colour = "black", fill = "deepskyblue3")+
+  geom_line (aes (x=Month, y=N), colour = "chocolate2", linewidth =1.25) + 
+  geom_line (aes (x=Month, y=X), colour = "chocolate2", linewidth =1.25) + 
+  geom_ribbon (aes (x=Month, ymin =N, ymax=X), fill = "chocolate2", alpha =0.3) + 
+  scale_x_continuous (limits = c(0.5,12.5), breaks = seq (1, 12, by= 1))+
+  scale_y_continuous(limits = c(-5, 40), breaks = seq (-5, 40, by = 10),
+                     sec.axis = sec_axis(trans = ~.*400, name = "Water potential (bars)")) +
+  #facet_grid(~site) +
+  geom_hline(yintercept=0, linetype ="dashed", size =1.3, colour = "darkred")+
+  #geom_hline(yintercept=30, linetype ="dashed", size =1, colour = "navyblue")+
   #scale_fill_viridis (discrete=TRUE) +
   #scale_color_viridis (discrete = TRUE) +
   #geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "red") +
-  theme_classic(base_size = 16) +
+  theme_bw(base_size = 12) +
+  theme (plot.title = element_text ( size = 20), #hjust = 0.5,
+         axis.title.y = element_text (size=12), 
+         axis.title.x = element_text (size=12), 
+         legend.title = element_text(size =14),
+         legend.text = element_text (size =12)) +
+  labs (title = "Study area climogram", y= "Temperature ºC", x = "Month")-> fig1D;fig1D 
+
+# visualización con 1 eje y mean WP?
+villa_clima %>%
+  #mutate(Month = as.factor(Month))%>%
+  group_by(Month)%>%
+  summarise_at(vars(T:WPmin), mean, na.rm = TRUE)%>%
+  ggplot() +
+  geom_col(aes (x= Month, y=WPmax), colour = "black", fill = "deepskyblue3")+
+  geom_line (aes (x=Month, y=N), colour = "chocolate2", linewidth =1.25) + 
+  geom_line (aes (x=Month, y=X), colour = "chocolate2", linewidth =1.25) + 
+  geom_ribbon (aes (x=Month, ymin =N, ymax=X), fill = "chocolate2", alpha =0.2) + 
+  scale_x_continuous (limits = c(0.5,12.5), breaks = seq (1, 12, by= 1))+
+  scale_y_continuous(limits = c(-5, 40), breaks = seq (-5, 40, by = 10)) +
+  #facet_grid(~site) +
+  geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "red")+
+  geom_hline(yintercept=13.5, linetype ="dashed", size =1, colour = "navyblue")+
+  #scale_fill_viridis (discrete=TRUE) +
+  #scale_color_viridis (discrete = TRUE) +
+  #geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "red") +
+  theme_bw(base_size = 12) +
   theme (plot.title = element_text ( size = 30), #hjust = 0.5,
          axis.title.y = element_text (size=18), 
          axis.title.x = element_text (size=18), 
          legend.title = element_text(size = 20),
          legend.text = element_text (size =16)) +
-  labs (title = "", y= "temperature ºC", x = "Month") 
+  labs (title = "Study area climogram", y= "Temperature ºC", x = "Month") 
 
+# scatter plot GDD vs abs WP (all year looks weird, only growing season?)
+villa_clima%>%
+  #filter(Month>3 & Month <10)%>%
+  filter(GDD>10) %>%
+  mutate(Month = as.factor(Month))%>%
+  ggplot(aes(x=GDD, y=abs_WP), color = Month)+  #abs_WP
+  geom_point() +
+  geom_smooth()+
+  theme_bw(base_size = 16) +
+  theme (plot.title = element_text ( size = 20), #hjust = 0.5,
+         axis.title.y = element_text (size=12), 
+         axis.title.x = element_text (size=12), 
+         legend.title = element_text(size =14),
+         legend.text = element_text (size =12)) +
+  labs (title = "WP x GDD", y= "Absolute WP (bars)", x = "GDD") -> fig1F;fig1F
+x11()
+Fig1_2 <- ggarrange(fig1D, fig1E, fig1F,labels = c("D", "E", "F"), ncol = 3, nrow = 1) 
+Fig1_2                
+
+ggsave(filename = "results/figures/Fig2.png", Fig2, path = NULL, 
+       scale = 1, width = 600, height = 800, units = "mm", dpi = 600)
 

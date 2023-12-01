@@ -103,25 +103,23 @@ ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
   ggthemes::theme_tufte() + 
   theme(text = element_text(family = "sans"),
         legend.position = "right", 
-        legend.title = element_blank(),
         legend.text = element_text(size = 12, color = "black"),
         panel.background = element_rect(color = "black", fill = NULL),
         axis.title = element_text(size = 12),
         axis.text = element_text(size = 12, color = "black")) +
-       # plot.margin = unit(c(0, 0.1, 0, 0), "cm")
-  #guides(fill = guide_legend(override.aes = list(shape = 22))) +
   scale_x_continuous(name = paste("Axis 1 (", round(pca1$eig[1, 2], 0),
                                   "% variance explained)", sep = "")) + 
   scale_y_continuous(name = paste("Axis 2 (", round(pca1$eig[2, 2], 0), 
                                   "% variance explained)", sep = "")) +
-  scale_color_manual(values = c("#B3EE3A", "#551A8B","orange",   "#40E0D0")) +
-  scale_fill_manual(values = c("#B3EE3A", "#551A8B","orange",   "#40E0D0"))+
-  labs(title = "PCA bioclimatic indices") +
+  scale_color_manual(name= "Site",values = c("#B3EE3A", "#551A8B","orange",   "#40E0D0")) +
+  scale_fill_manual(name= "Site", values = c("#B3EE3A", "#551A8B","orange",   "#40E0D0"))+
+  labs(title = "PCA of bioclimatic indices") +
   theme (plot.title = element_text ( size = 20), #hjust = 0.5,
          axis.title.y = element_text (size=12), 
          axis.title.x = element_text (size=12), 
          legend.title = element_text(size =14),
-         legend.text = element_text (size =12)) -> fig1E;fig1E
+         legend.text = element_text (size =12)) -> Fig2B; Fig2B
+
 
 pca1$eig
 pca1$var

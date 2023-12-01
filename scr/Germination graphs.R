@@ -1,5 +1,5 @@
 library(tidyverse);library(wesanderson); library (binom) ;library(ggpubr)
-####### FIG 2A germination bars comparing final germination #####
+####### FIG 3A germination bars comparing final germination #####
 # mean final germination x sowing time and WP treatment with binomial errors
 data%>%
   mutate(WP_treatment = factor(WP_treatment))%>%
@@ -19,13 +19,15 @@ data%>%
   geom_errorbar(aes(WP_treatment, mean, ymin = lower, ymax = upper), 
                 position=position_dodge(0.7), color = "black",width = 0.2, size =1) +
   scale_fill_manual (name= "Sowing time", values = c("forestgreen", "gold") ) +
-  theme_classic(base_size = 16) +
-  theme (plot.title = element_text ( size = 26), #hjust = 0.5,
-         axis.title.y = element_text (size=14), 
-         axis.title.x = element_text (size=14), 
+  ggthemes::theme_tufte() + 
+  theme (text = element_text(family = "sans"),
+         panel.background = element_rect(color = "black", fill = NULL),
+         plot.title = element_text ( size = 20), #hjust = 0.5,
+         axis.title.y = element_text (size=12), 
+         axis.title.x = element_text (size=12), 
          legend.title = element_text(size = 14),
          legend.text = element_text (size =12))+
-  labs (title = "Final germination per sowing time", y= "Final germination proportion", x = "WP Treatments (MPa)") -> fig2A;fig2A
+  labs (title = "Final germination per sowing time", y= "Final germination proportion", x = "WP Treatments (MPa)") -> Fig3A;Fig3A
 
 ####### FIG 2B cumulative germination curve with ggplot ##############
 # create/extent colorpalette (https://www.datanovia.com/en/blog/easy-way-to-expand-color-palettes-in-r/)
@@ -48,19 +50,20 @@ data %>%
   facet_wrap(~sowing_time)+
   scale_color_manual(name = "WP Treatments\n (MPa)", values = WPcolors) +
   coord_cartesian(ylim = c(0,1))+
-  theme_classic(base_size = 16) +
-  theme (plot.title = element_text ( size = 26), #hjust = 0.5,
-         strip.text = element_text (size = 20),
-         panel.background = element_blank(), 
-         axis.title.y = element_text (size=14), 
-         axis.title.x = element_text (size=14), 
+  theme_classic() +
+  theme (text = element_text(family = "sans"),
+         panel.background = element_rect(color = "black", fill = NULL),
+         plot.title = element_text ( size = 20), #hjust = 0.5,
+         strip.text = element_text (size = 18),
+         axis.title.y = element_text (size=12), 
+         axis.title.x = element_text (size=12), 
          legend.title = element_text(size = 14),
          legend.text = element_text (size =12))+
-  labs (title = "Cumulative germination curves", y= "Germination proportion", x = "Days")->fig2B;fig2B 
+  labs (title = "Cumulative germination curves", y= "Germination proportion", x = "Days")->Fig3B;Fig3B
 
 
-Fig2 <- ggarrange(fig2A, fig2B, labels = c("A", "B"), ncol = 1, nrow = 2) 
-Fig2                
+Fig3 <- ggarrange(Fig3A, Fig3B, labels = c("A", "B"), ncol = 1, nrow = 2) 
+Fig3                
                   
 ggsave(filename = "results/figures/Fig2.png", Fig2, path = NULL, 
        scale = 1, width = 600, height = 800, units = "mm", dpi = 600)

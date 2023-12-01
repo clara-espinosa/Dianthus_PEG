@@ -1,31 +1,39 @@
-library(tidyverse);library(MCMCglmm); library(blme)
-library(lme4); library(glmmTMB); library (DHARMa) # paquetes para los GLMs
-library(binom);library(effects)
+library(tidyverse);library(MCMCglmm)
+library(glmmTMB); library (DHARMa) # paquetes para los GLMs
+library(binom);library(effects);library(emmeans)
 
 #### GLM germination analysis ####
 # glm para final germination necesitamos dataframe con semillas germinadas y viables
 # podríamos usar los datos brutos y transformarlos o directamente usar el objeto germ_indices
-# donde ya tenemos calculado por cada sowing_time, ID y petri 
-# el num de semillas germinadas al final = "grs"
-# el num de semillas viables = "viable"
-str(germ_indices)
-germ_indices %>%
-  filter(!ID == "C00")-> germ_indices2
-a <- glmmTMB(cbind(grs, viable - grs) ~ WP_treatment* sowing_time + (1|site/ID),  family = binomial, data= germ_indices2) 
-summary(a)# significant interaction term suggest analyzing both sowing times separatey
-          #same results without C00
 
-germ_indices2 %>%
-  filter(sowing_time == "Immediate") -> germ_ind_im2
-a <- glmmTMB(cbind(grs, viable - grs) ~ WP_treatment* GDD+ (1|site/ID),  family = binomial, data= germ_ind_im2) 
-summary(a) # marginal WP_treatment significant
-           # with out C00 = WP_treatment significant, GDD and interaction marginal
+data%>%
+  group_by(ID, sowing_time, WP_treatment, petri)%>%
+  summarise(germinated = sum(germinated), viable = sum(viable))%>%
+  merge(bioclim, by= c("ID")) %>%
+  merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= c("ID", "site")) %>%
+  #mutate(WP_treatment = as.factor(WP_treatment)) %>%
+  as.data.frame()-> final_germ
+str(final_germ)
 
-germ_indices2 %>%
-  filter(sowing_time == "After_ripening") -> germ_ind_af2
-a <- glmmTMB(cbind(grs, viable - grs) ~ WP_treatment* GDD+ (1|site/ID),  family = binomial, data= germ_ind_af2) 
-summary(a) # WP_treatment significant and GDD marginal (no interaction)
-           # without C00 = WP significant and GDD marginal (no interaction)
+a <- glmmTMB(cbind(germinated, viable - germinated) ~ WP_treatment* sowing_time + (1|site/ID),  family = binomial, data= final_germ) 
+summary(a) # every thing significant including interaction (check sowing time separately)
+#https://cran.r-project.org/web/packages/emmeans/vignettes/AQuickStart.html
+EMM<-emmeans (a, ~ WP_treatment * sowing_time)
+### Simple pairwise comparisons...
+pairs(EMM, simple = "WP_treatment")    # compare WP_treatment for each sowing time
+pairs(EMM, simple = "sowing_time")     # compare sowing time for each treatment
+
+final_germ %>%
+  filter(sowing_time == "Immediate")-> final_germ_im
+a <- glmmTMB(cbind(germinated, viable - germinated) ~ WP_treatment*GDD + (1|site/ID),  family = binomial, data= final_germ_im) 
+summary(a) # only WP_treatment significant, no differences according to GDD
+
+
+final_germ %>%
+  filter(sowing_time == "After_ripening")-> final_germ_af
+str(final_germ_af)
+a <- glmmTMB(cbind(germinated, viable - germinated) ~ WP_treatment*GDD + (1|ID),  family = binomial, data= final_germ_af) 
+summary(a) # only WP_treatment significant, no differences according to GDD
 
 # glm para mean germination rate mgr (parecido al base water potential)
 
@@ -41,7 +49,7 @@ hist(bWP_summary$psib50)
 bWP_summary %>%
   merge(bioclim, by= c("ID")) %>%
   merge(summary_seedmass, by= c("ID"))%>%
-  filter(!ID == "C00")%>%
+  #filter(!ID == "C00")%>%
   as.data.frame()-> glm
 a <- glmmTMB(psib50 ~ GDD * sowing_time , family = gaussian,  data= glm) #+ (1|site)
 summary(a)# significant interaction term suggest analyzing both sowing times separately

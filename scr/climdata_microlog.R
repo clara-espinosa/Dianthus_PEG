@@ -215,7 +215,7 @@ read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   mutate (Site_year = paste (site, Year)) %>%
   mutate(WP = rowMeans((cbind(sensor1, sensor2)))) %>% 
   select(! c(Micro, sensor1, sensor2)) %>% 
-  group_by(Community, site, Month, Day) %>%
+  group_by(Community, site, Year, Month, Day) %>%
   summarise(T = mean(Temperature), X = max(Temperature), N = min(Temperature), n = length(Time), 
             WPmean = mean(WP), WPmax = max(WP), WPmin = max (WP), abs_WP = sum(WP)) %>%
   mutate(GDD = ifelse(T >= 5, T, 0)) %>%
@@ -223,78 +223,60 @@ read.csv("data/WP_gooddata_villa.csv", sep = ";") %>%
   summarise(T = mean(T), X = max(X), N = min(N), abs_WP = sum(abs_WP), GDD = sum(GDD),
             WPmean = mean(WPmean), WPmax = mean(WPmax), WPmin = mean(WPmin))-> villa_clima
 
-# prueba visualización con doble eje Y y abs WP sum
+# prueba visualización con doble eje Y y WP mean
 x11()
 villa_clima %>%
   #mutate(Month = as.factor(Month))%>%
   group_by(Month)%>%
   summarise_at(vars(T:WPmin), mean, na.rm = TRUE)%>%
   ggplot() +
-  geom_col(aes (x= Month, y=abs_WP/400), colour = "black", fill = "deepskyblue3")+
+  geom_col(aes (x= Month, y=WPmax*2), colour = "black", fill = "deepskyblue3")+
   geom_line (aes (x=Month, y=N), colour = "chocolate2", linewidth =1.25) + 
   geom_line (aes (x=Month, y=X), colour = "chocolate2", linewidth =1.25) + 
   geom_ribbon (aes (x=Month, ymin =N, ymax=X), fill = "chocolate2", alpha =0.3) + 
   scale_x_continuous (limits = c(0.5,12.5), breaks = seq (1, 12, by= 1))+
   scale_y_continuous(limits = c(-5, 40), breaks = seq (-5, 40, by = 10),
-                     sec.axis = sec_axis(trans = ~.*400, name = "Water potential (bars)")) +
+                     sec.axis = sec_axis(trans = ~./20, name = "Water potential (-MPa)")) +
   #facet_grid(~site) +
   geom_hline(yintercept=0, linetype ="dashed", size =1.3, colour = "darkred")+
-  #geom_hline(yintercept=30, linetype ="dashed", size =1, colour = "navyblue")+
+  geom_hline(yintercept=30, linetype ="dashed", size =1, colour = "navyblue")+
   #scale_fill_viridis (discrete=TRUE) +
   #scale_color_viridis (discrete = TRUE) +
   #geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "red") +
-  theme_bw(base_size = 12) +
-  theme (plot.title = element_text ( size = 20), #hjust = 0.5,
+  ggthemes::theme_tufte() + 
+  theme (text = element_text(family = "sans"),
+         panel.background = element_rect(color = "black", fill = NULL),
+         plot.title = element_text ( size = 20), #hjust = 0.5,
          axis.title.y = element_text (size=12), 
          axis.title.x = element_text (size=12), 
          legend.title = element_text(size =14),
          legend.text = element_text (size =12)) +
-  labs (title = "Study area climogram", y= "Temperature ºC", x = "Month")-> fig1D;fig1D 
-
-# visualización con 1 eje y mean WP?
-villa_clima %>%
-  #mutate(Month = as.factor(Month))%>%
-  group_by(Month)%>%
-  summarise_at(vars(T:WPmin), mean, na.rm = TRUE)%>%
-  ggplot() +
-  geom_col(aes (x= Month, y=WPmax), colour = "black", fill = "deepskyblue3")+
-  geom_line (aes (x=Month, y=N), colour = "chocolate2", linewidth =1.25) + 
-  geom_line (aes (x=Month, y=X), colour = "chocolate2", linewidth =1.25) + 
-  geom_ribbon (aes (x=Month, ymin =N, ymax=X), fill = "chocolate2", alpha =0.2) + 
-  scale_x_continuous (limits = c(0.5,12.5), breaks = seq (1, 12, by= 1))+
-  scale_y_continuous(limits = c(-5, 40), breaks = seq (-5, 40, by = 10)) +
-  #facet_grid(~site) +
-  geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "red")+
-  geom_hline(yintercept=13.5, linetype ="dashed", size =1, colour = "navyblue")+
-  #scale_fill_viridis (discrete=TRUE) +
-  #scale_color_viridis (discrete = TRUE) +
-  #geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "red") +
-  theme_bw(base_size = 12) +
-  theme (plot.title = element_text ( size = 30), #hjust = 0.5,
-         axis.title.y = element_text (size=18), 
-         axis.title.x = element_text (size=18), 
-         legend.title = element_text(size = 20),
-         legend.text = element_text (size =16)) +
-  labs (title = "Study area climogram", y= "Temperature ºC", x = "Month") 
+  labs (title = "Study area climogram", y= "Temperature ºC", x = "Month")-> Fig2A;Fig2A 
 
 # scatter plot GDD vs abs WP (all year looks weird, only growing season?)
 villa_clima%>%
   #filter(Month>3 & Month <10)%>%
   filter(GDD>10) %>%
   mutate(Month = as.factor(Month))%>%
-  ggplot(aes(x=GDD, y=abs_WP), color = Month)+  #abs_WP
+  group_by(site)%>%
+  summarise(abs_WP = sum(abs_WP),
+            GDD = sum (GDD), 
+            WPmean= sum(WPmean)) %>%
+  ggplot(aes(x=GDD, y=WPmean))+  #abs_WP
   geom_point() +
   geom_smooth()+
-  theme_bw(base_size = 16) +
-  theme (plot.title = element_text ( size = 20), #hjust = 0.5,
+  ggthemes::theme_tufte() + 
+  theme (text = element_text(family = "sans"),
+         panel.background = element_rect(color = "black", fill = NULL),
+         plot.title = element_text ( size = 20), #hjust = 0.5,
          axis.title.y = element_text (size=12), 
          axis.title.x = element_text (size=12), 
          legend.title = element_text(size =14),
          legend.text = element_text (size =12)) +
-  labs (title = "WP x GDD", y= "Absolute WP (bars)", x = "GDD") -> fig1F;fig1F
+  labs (title = "WP x GDD", y= "Absolute WP (MPa)", x = "GDD") -> Fig2C;Fig2C
 x11()
-Fig1_2 <- ggarrange(fig1D, fig1E, fig1F,labels = c("D", "E", "F"), ncol = 3, nrow = 1) 
-Fig1_2                
+Fig2 <- ggarrange(Fig2A, Fig2B, Fig2C, labels = c("A", "B", "C"), ncol = 1, nrow = 3) 
+Fig2                
 
 ggsave(filename = "results/figures/Fig2.png", Fig2, path = NULL, 
        scale = 1, width = 600, height = 800, units = "mm", dpi = 600)

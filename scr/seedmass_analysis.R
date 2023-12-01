@@ -60,12 +60,14 @@ summary_seedmass %>%
 # seed mass x Base water potential
 summary_seedmass %>%
   merge(bWP_summary)%>%
+  merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= c("ID")) %>%
+  mutate(site= as.factor(site))%>%
   mutate(sowing_time = factor(sowing_time))%>%
   mutate(sowing_time = fct_relevel(sowing_time, "Immediate", "After_ripening" ))%>%
   mutate(sowing_time = recode (sowing_time, "Immediate" = "Immediate", "After_ripening" = "After ripening"))%>%
-  ggplot(aes(x= mean, y=psib50 ))+
-  geom_point(size = 3)+
-  geom_smooth(method = "lm") +
+  ggplot()+
+  geom_point(aes(x= mean, y=psib50,color = site ), size = 3)+
+  geom_smooth(aes(x= mean, y=psib50), method = "lm") +
   #ylim(-0.5, 0.1) +
   #xlim(0.6, 1.7)+
   facet_wrap(~sowing_time)+

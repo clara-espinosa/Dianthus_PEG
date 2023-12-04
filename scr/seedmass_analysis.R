@@ -75,17 +75,25 @@ summary_seedmass %>%
   mutate(sowing_time = factor(sowing_time))%>%
   mutate(sowing_time = fct_relevel(sowing_time, "Immediate", "After_ripening" ))%>%
   mutate(sowing_time = recode (sowing_time, "Immediate" = "Immediate", "After_ripening" = "After ripening"))%>%
+  mutate(site = fct_relevel(site,
+                            "Rabinalto", "Cañada",
+                            "Solana", "Penouta")) %>%
   ggplot()+
   geom_point(aes(x= mean, y=psib50,color = site ), size = 3)+
   geom_smooth(aes(x= mean, y=psib50), method = "lm") +
   #ylim(-0.5, 0.1) +
   #xlim(0.6, 1.7)+
   facet_wrap(~sowing_time)+
-  theme_bw(base_size = 14) +
-  theme (plot.title = element_text ( size = 24), #hjust = 0.5,
-         strip.text = element_text (size = 20),
+  scale_color_manual(name= "",values = c("green3", "#551A8B","orange",   "deepskyblue3")) +
+  scale_fill_manual(name= "", values = c("green3", "#551A8B","orange",   "deepskyblue3"))+
+  ggthemes::theme_tufte() + 
+  theme (text = element_text(family = "sans"),
+         panel.background = element_rect(color = "black", fill = NULL), #hjust = 0.5,
+         plot.title = element_text ( size = 20), #
+         strip.text = element_text (size = 18),
+         strip.background =element_rect(fill="white"),
          axis.title.y = element_text (size=14), 
-         axis.title.x = element_text (size=14),
+         axis.title.x = element_text (size=14), 
          legend.title = element_text(size = 14),
          legend.text = element_text (size =12))+
   labs (title = "Base Water Potential vs Seed mass", x= "Seed mass (mg)", y = "Base Water Potential (Mpa)")

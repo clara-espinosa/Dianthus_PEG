@@ -101,19 +101,19 @@ ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
   #geom_label_repel (data =pcaInds, aes(x=Dim.1, y = Dim.2, label = ID ), show.legend = FALSE, size = 4)+
   ggthemes::theme_tufte() + 
   theme(text = element_text(family = "sans"),
-        plot.title = element_text ( size = 20), #hjust = 0.5,
-        legend.title = element_text(size =14),
-        legend.position = "right", 
-        legend.text = element_text(size = 12, color = "black"),
+        plot.title = element_text ( size = 18), #hjust = 0.5,
+        legend.title = element_text(size =10),
+        legend.position = "bottom", 
+        legend.text = element_text(size = 11, color = "black"),
         panel.background = element_rect(color = "black", fill = NULL),
         axis.title = element_text(size = 11),
-        axis.text = element_text(size = 12, color = "black")) +
+        axis.text = element_text(size = 11, color = "black")) +
   scale_x_continuous(name = paste("Axis 1 (", round(pca1$eig[1, 2], 0),
                                   "% variance explained)", sep = "")) + 
   scale_y_continuous(name = paste("Axis 2 (", round(pca1$eig[2, 2], 0), 
                                   "% variance explained)", sep = "")) +
-  scale_color_manual(name= "Site",values = c("green3", "#551A8B","orange",   "deepskyblue3")) +
-  scale_fill_manual(name= "Site", values = c("green3", "#551A8B","orange",   "deepskyblue3"))+
+  scale_color_manual(name= "",values = c("green3", "#551A8B","orange",   "deepskyblue3")) +
+  scale_fill_manual(name= "", values = c("green3", "#551A8B","orange",   "deepskyblue3"))+
   labs(title = "PCA of bioclimatic indices") -> Fig2B; Fig2B
 
 

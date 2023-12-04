@@ -1,4 +1,5 @@
 library(tidyverse);library(zoo); library(dplyr);library (lubridate);library(ggpubr)
+library(cowplot);library(patchwork)
 
 
 ###dataframe ####
@@ -208,7 +209,7 @@ WP_traits %>%
         axis.title.y = element_text (size=16), 
         axis.title.x = element_text (size=16))
 
-### get mean climograma villa from Penauta, Rabinalto and Solana central ####
+### FIG 2 A and C get mean climograma villa from Penauta, Rabinalto and Solana central ####
 
 
 read.csv("data/wp_villa_2021_2023.csv", sep = ",") %>%
@@ -257,11 +258,11 @@ villa_clima %>%
   ggthemes::theme_tufte() + 
   theme (text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL),
-         plot.title = element_text ( size = 20), #hjust = 0.5,
-         axis.title.y = element_text (size=12), 
-         axis.title.x = element_text (size=12), 
-         legend.title = element_text(size =14),
-         legend.text = element_text (size =12)) +
+         plot.title = element_text ( size = 18), #hjust = 0.5,
+         axis.title.y = element_text (size=11), 
+         axis.title.x = element_text (size=11), 
+         legend.title = element_text(size =11),
+         legend.text = element_text (size =11)) +
   labs (title = "Study area climogram", y= "Temperature ºC", x = "Month")-> Fig2A;Fig2A 
 
 read.csv("data/wp_villa_2021_2023.csv", sep = ",") %>%
@@ -288,7 +289,6 @@ read.csv("data/wp_villa_2021_2023.csv", sep = ",") %>%
   filter(n >27)
 
 # scatter plot GDD vs abs WP (all year looks weird, only growing season?)
-
 monthly_villa_clima%>%
   filter(!site =="Cañada") %>%
   filter(!(site== "Solana" & Micro=="central"))%>%
@@ -302,24 +302,68 @@ monthly_villa_clima%>%
   summarise(abs_WP = sum(abs_WP),
             GDD = sum (GDD), 
             WPmean= sum(WPmean)) %>%
+  mutate(site = fct_relevel(site,
+                            "Rabinalto", "Cañada",
+                            "Solana", "Penouta")) %>%
   ggplot()+  #abs_WP
   geom_point(aes(x=GDD, y=WPmean, color=site), size=4) +
-  scale_color_manual(name= "Site",values = c( "deepskyblue3","green3","orange" )) + #"#551A8B",,
+  scale_color_manual(name= "Site",values = c( "green3","orange","deepskyblue3")) + #"#551A8B",,
   geom_smooth(aes(x=GDD, y=WPmean))+
+  stat_smooth_func(geom="text",method="lm",hjust=0,parse=TRUE)+
   ggthemes::theme_tufte() + 
   theme (text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL),
-         plot.title = element_text ( size = 20), #hjust = 0.5,
-         axis.title.y = element_text (size=12), 
-         axis.title.x = element_text (size=12), 
-         legend.title = element_text(size =14),
-         legend.text = element_text (size =12),
-         legend.position= "right") +
-  labs (title = "Yearly Water Potential x GDD", y= "Absolute WP (MPa)", x = "Growing Degree Days (ºC)") -> Fig2C;Fig2C
+         plot.title = element_text ( size = 18), #hjust = 0.5,
+         axis.title.y = element_text (size=11), 
+         axis.title.x = element_text (size=11), 
+         legend.title = element_text(size =11),
+         legend.text = element_text (size =11),
+         legend.position= "none") +
+  labs (title = "Water Potential x GDD", y= "Absolute WP (MPa)", x = "Growing Degree Days (ºC)") -> Fig2C;Fig2C
+
+monthly_villa_clima%>%
+  filter(!site =="Cañada") %>%
+  filter(!(site== "Solana" & Micro=="central"))%>%
+  filter (! Year == 2021)%>%
+  filter (!(Year %in% 2022 & Month < 3))%>%
+  filter (!(Year %in% 2022 & Month >11))%>%
+  filter (!(Year %in% 2023 & Month < 3))%>%
+  filter (!(Year %in% 2023 & Month >11))%>%
+  #mutate(Month = as.factor(Month))%>%
+  group_by(Year, site, Micro)%>%
+  summarise(abs_WP = sum(abs_WP),
+            GDD = sum (GDD), 
+            WPmean= sum(WPmean))%>%
+  as.data.frame() -> lm
+
+summary(lm(abs_WP ~ GDD, data=lm))$adj.r.squared  
 x11()
+#### figure 2 combinatio
+# using ggarrange
 Fig2 <- ggarrange(Fig2A, Fig2B, Fig2C, labels = c("A", "B", "C"), ncol = 1, nrow = 3) 
 Fig2                
 
 ggsave(filename = "results/figures/Fig2.png", Fig2, path = NULL, 
        scale = 1, width = 600, height = 800, units = "mm", dpi = 600)
 
+#using cowplot
+# combine both plot using plot_grid() 
+combined_plot<-plot_grid(Fig2B, Fig2C,ncol=1, align = "hv") 
+
+# extract legend from plot2 
+legend <- get_legend( 
+  Fig2B + 
+    guides(color = guide_legend(nrow = 1)) + 
+    theme(legend.position = "top") 
+) 
+
+# Combine combined plot and legend using plot_grid() 
+plot_grid(legend, combined_plot, ncol=1,rel_heights = c(.1, 1))
+
+# using patchwork
+design = "A
+B
+C"
+(Fig2A+Fig2B+Fig2C) + 
+  plot_layout(nrow=4, design = design, heights = c(2.5,3.5,2.5)) +
+  plot_annotation(tag_levels = "A")-> Fig2;Fig2 # move width of plot panel to adjust sizes

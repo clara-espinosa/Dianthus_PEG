@@ -22,10 +22,20 @@ seed_mass %>%
   merge(bioclim, by= c("ID")) %>%
   merge(bWP_summary, by= c("ID"))%>%
   as.data.frame()-> glm
-a <- glmmTMB(psib50 ~ weight * sowing_time + (1|site), family = gaussian,  data= glm) #
-summary(a)# not significant interaction term , only sowing time (i.e. immediate sowing has higher bWP)
+a <- glmmTMB(abs(psib50) ~ weight * sowing_time + (1|site),  family = Gamma(link="log"),  data= glm) #Gamma(link="log")// gaussian
+summary(a)# not significant interaction term , only sowing time (i.e. immediate sowing has higher bWP)   
 # same results without C00
-residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family mets assumptions
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
+
+seed_mass %>%
+  merge(bioclim, by= c("ID")) %>%
+  merge(bWP_summary, by= c("ID"))%>%
+  filter(sowing_time=="After_ripening")%>%
+  as.data.frame()-> glm
+
+a <- glmmTMB(abs(psib50) ~ weight + (1|site), family = Gamma(link="log"),  data= glm) #gaussian
+summary(a) # marginal significant effrects of seed weight
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
 
 # seed mass x plot graph
 ggplot(summary_seedmass, aes(x= ID, y =mean, ymin = min, ymax = max, color = ID))+

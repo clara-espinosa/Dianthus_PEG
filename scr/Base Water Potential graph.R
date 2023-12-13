@@ -1,19 +1,25 @@
 library(tidyverse);library (seedr)
 
 #base water potential
+
+regrpvalues <- data.frame (sowing_time= c("Fresh", "After ripened"), lbl = c("p = 0.19", "p = 0.04"))
+regrpvalues %>%
+  mutate(sowing_time = factor(sowing_time))%>%
+  mutate(sowing_time = fct_relevel(sowing_time, "Fresh", "After ripened" ))-> regrpvalues
 bWP_summary %>%
   merge(bioclim, by= c("ID")) %>%
   merge(summary_seedmass, by= c("ID"))%>%
   #merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= "ID")%>%
   mutate(sowing_time = factor(sowing_time))%>%
-  mutate(sowing_time = fct_relevel(sowing_time, "Immediate", "After_ripening" ))%>%
-  mutate(sowing_time = recode (sowing_time, "Immediate" = "Immediate", "After_ripening" = "After ripening"))%>%
+  mutate(sowing_time = recode (sowing_time, "Immediate" = "Fresh", "After_ripening" = "After ripened"))%>%
+  mutate(sowing_time = fct_relevel(sowing_time, "Fresh", "After ripened" ))%>%
   ggplot (aes(x=GDD, y= psib50)) + #, color = site
-  geom_point()+
-  geom_smooth(method = "lm", se=FALSE, level = 0.9)+
+  geom_point(size= 4, shape=21, fill= "deeppink")+
+  geom_smooth(method = "lm", se=FALSE, level = 0.9, color ="deeppink" )+
+  geom_text(data= regrpvalues, aes(y= 0.1, x= 1450,  label=lbl))+
   facet_wrap(~sowing_time)+
   ggthemes::theme_tufte() + 
-  geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "red")+
+  geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "black")+
   theme (text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL), #hjust = 0.5,
          plot.title = element_text ( size = 20), #
@@ -23,4 +29,4 @@ bWP_summary %>%
          axis.title.x = element_text (size=14), 
          legend.title = element_text(size = 14),
          legend.text = element_text (size =12))+
-  labs(title= "Base water potential per GDD", y = "Base Water Potential (MPa)") -> Fig4; Fig4
+  labs(title= "Base water potential per GDD", y = expression(paste(Psi,"b (MPa)")), x= "Growing degree days (ºC)") -> Fig5; Fig5

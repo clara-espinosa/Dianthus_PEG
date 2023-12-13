@@ -1,4 +1,5 @@
 library(tidyverse);library(zoo);library(dplyr);library (lubridate)
+
 library(ggrepel)
 
 ##### join ibuttons with DIANTHUS bioclim data ibuttons + microlog####
@@ -75,6 +76,7 @@ bioclim_80  %>%
   select(site, ID, bio1:GDD)%>%
   mutate(site = fct_recode(site, "Penouta" = "Penauta")) ->bioclim_80 
 
+bioclim_80 [, 3:8] %>%cor()
 
 bioclim_80 [, 3:8] %>%
   FactoMineR::PCA() -> pca1
@@ -89,37 +91,9 @@ pca1$var$coord[, 1:2] %>%
   rownames_to_column(var = "Variable") %>%
   mutate(Variable = fct_recode(Variable, "Snow" = "Snw"))-> pcaVars
 
-### Plot PCA
-
-ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
-  coord_fixed() +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_vline(xintercept = 0, linetype = "dashed") +
-  geom_segment(data = pcaVars, aes(x = 0, y = 0, xend = 3*Dim.1, yend = 3*Dim.2)) +
-  geom_point(aes(fill = site, color= site), size = 4) +
-  geom_label(data = pcaVars, aes(x = 3*Dim.1, y = 3*Dim.2, label = Variable),  show.legend = FALSE, size = 4) +
-  #geom_label_repel (data =pcaInds, aes(x=Dim.1, y = Dim.2, label = ID ), show.legend = FALSE, size = 4)+
-  ggthemes::theme_tufte() + 
-  theme(text = element_text(family = "sans"),
-        plot.title = element_text ( size = 18), #hjust = 0.5,
-        legend.title = element_text(size =10),
-        legend.position = "bottom", 
-        legend.text = element_text(size = 11, color = "black"),
-        panel.background = element_rect(color = "black", fill = NULL),
-        axis.title = element_text(size = 11),
-        axis.text = element_text(size = 11, color = "black")) +
-  scale_x_continuous(name = paste("Axis 1 (", round(pca1$eig[1, 2], 0),
-                                  "% variance explained)", sep = "")) + 
-  scale_y_continuous(name = paste("Axis 2 (", round(pca1$eig[2, 2], 0), 
-                                  "% variance explained)", sep = "")) +
-  scale_color_manual(name= "",values = c("green3", "#551A8B","orange",   "deepskyblue3")) +
-  scale_fill_manual(name= "", values = c("green3", "#551A8B","orange",   "deepskyblue3"))+
-  labs(title = "PCA of bioclimatic indices") -> Fig2B; Fig2B
-
-
 pca1$eig
 pca1$var
-
+pca1
 
 
 

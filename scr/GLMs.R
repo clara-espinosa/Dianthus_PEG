@@ -5,14 +5,15 @@ library(binom);library(effects);library(emmeans)
 #### GLM germination analysis ####
 # glm para final germination necesitamos dataframe con semillas germinadas y viables
 # podríamos usar los datos brutos y transformarlos o directamente usar el objeto germ_indices
-
+unique(data$ID)
+unique(final_germ$ID)
 data%>%
   group_by(ID, sowing_time, WP_treatment, petri)%>%
-  summarise(germinated = sum(germinated), viable = sum(viable))%>%
-  merge(bioclim, by= c("ID")) %>%
-  merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= c("ID", "site")) %>%
+  summarise(germinated = sum(germinated), viable = sum(viable)) %>%
+  merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= c("ID"))%>%  #
+  #merge(bioclim, by= c("ID")) %>% # C00 not bioclim data so it dissapears
   #mutate(WP_treatment = as.factor(WP_treatment)) %>%
-  as.data.frame()-> final_germ
+  as.data.frame()->final_germ 
 str(final_germ)
 
 a <- glmmTMB(cbind(germinated, viable - germinated) ~ WP_treatment* sowing_time + (1|site/ID),  family = binomial, data= final_germ) 
@@ -24,13 +25,17 @@ pairs(EMM, simple = "WP_treatment")    # compare WP_treatment for each sowing ti
 pairs(EMM, simple = "sowing_time")     # compare sowing time for each treatment
 
 final_germ %>%
-  filter(sowing_time == "Immediate")-> final_germ_im
+  filter(sowing_time == "Immediate")%>%
+  merge(bioclim, by= c("ID", "site"))-> final_germ_im
+unique(final_germ_im$ID)
+str(final_germ_im)
 a <- glmmTMB(cbind(germinated, viable - germinated) ~ WP_treatment*GDD + (1|site/ID),  family = binomial, data= final_germ_im) 
 summary(a) # only WP_treatment significant, no differences according to GDD
 
-
 final_germ %>%
-  filter(sowing_time == "After_ripening")-> final_germ_af
+  filter(sowing_time == "After_ripening")%>%
+  merge(bioclim, by= c("ID", "site"))-> final_germ_af
+unique(final_germ_af$ID)
 str(final_germ_af)
 a <- glmmTMB(cbind(germinated, viable - germinated) ~ WP_treatment*GDD + (1|ID),  family = binomial, data= final_germ_af) 
 summary(a) # only WP_treatment significant, no differences according to GDD
@@ -58,7 +63,6 @@ residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family mets assump
 
 glm %>%
   filter(sowing_time == "Immediate")%>%
-  filter(!ID == "C00")%>%
   as.data.frame()-> glm_im
 b <- glmmTMB(psib50 ~ GDD + (1|site), family = gaussian,  data= glm_im) #
 summary(b)# No significant effect of GDD 

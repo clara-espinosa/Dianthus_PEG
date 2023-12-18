@@ -38,7 +38,9 @@ summary(a) # marginal significant effrects of seed weight
 residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
 
 # seed mass x plot graph
-ggplot(summary_seedmass, aes(x= ID, y =mean, ymin = min, ymax = max, color = ID))+
+ summary_seedmass%>%
+   rename (Subpopulation=ID) %>%
+  ggplot(aes(x= Subpopulation, y =mean, ymin = min, ymax = max, color = Subpopulation))+
   geom_point( size = 3) +
   geom_errorbar (width = 0.2, size =1.2)+
   theme_bw(base_size = 14) +
@@ -49,7 +51,8 @@ ggplot(summary_seedmass, aes(x= ID, y =mean, ymin = min, ymax = max, color = ID)
          axis.text.x = element_blank(),
          legend.title = element_text(size = 14),
          legend.text = element_text (size =12))+
-  labs (title = "Mean seed mass per plot", y= "Seed mass (mg)", x = "Plot ID") 
+  #scale_color_manual (name= "Subpopulation", values = c("forestgreen", "gold") ) +
+  labs (title = "Mean seed mass per plot", y= "Seed mass (mg)", x = "Subpopulation ID") 
 # seed mass x GDD graph
 summary_seedmass %>%
   merge(bioclim)%>%
@@ -62,10 +65,10 @@ summary_seedmass %>%
          strip.text = element_text (size = 20),
          axis.title.y = element_text (size=14), 
          axis.title.x = element_text (size=14),
-         axis.text.x = element_blank(),
+         axis.text.x = element_text (size=14),
          legend.title = element_text(size = 14),
          legend.text = element_text (size =12))+
-  labs (title = "Seed mass correlation with GDD", y= "Seed mass (mg)", x = "GDD")
+  labs (title = "Seed mass correlation with GDD", y= "Seed mass (mg)", x = "Growing degree days")
 
 # seed mass x Base water potential
 summary_seedmass %>%
@@ -74,7 +77,7 @@ summary_seedmass %>%
   mutate(site= as.factor(site))%>%
   mutate(sowing_time = factor(sowing_time))%>%
   mutate(sowing_time = fct_relevel(sowing_time, "Immediate", "After_ripening" ))%>%
-  mutate(sowing_time = recode (sowing_time, "Immediate" = "Immediate", "After_ripening" = "After ripening"))%>%
+  mutate(sowing_time = recode (sowing_time, "Immediate" = "Fresh", "After_ripening" = "After ripened"))%>%
   mutate(site = fct_relevel(site,
                             "Rabinalto", "Cañada",
                             "Solana", "Penouta")) %>%
@@ -84,8 +87,8 @@ summary_seedmass %>%
   #ylim(-0.5, 0.1) +
   #xlim(0.6, 1.7)+
   facet_wrap(~sowing_time)+
-  scale_color_manual(name= "",values = c("green3", "#551A8B","orange",   "deepskyblue3")) +
-  scale_fill_manual(name= "", values = c("green3", "#551A8B","orange",   "deepskyblue3"))+
+  scale_color_manual(name= "Summit",values = c("green3", "#551A8B","orange",   "deepskyblue3")) +
+  #scale_fill_manual(name= "", values = c("green3", "#551A8B","orange",   "deepskyblue3"))+
   ggthemes::theme_tufte() + 
   theme (text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL), #hjust = 0.5,
@@ -96,13 +99,16 @@ summary_seedmass %>%
          axis.title.x = element_text (size=14), 
          legend.title = element_text(size = 14),
          legend.text = element_text (size =12))+
-  labs (title = "Base Water Potential vs Seed mass", x= "Seed mass (mg)", y = "Base Water Potential (Mpa)")
+  labs (title = "Base Water Potential vs Seed mass", x= "Seed mass (mg)", y = expression(paste(Psi,"b (MPa)")))
 
 summary_seedmass %>%
   merge(bWP_summary)%>%
   merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= c("ID"))%>%
   filter(Immediate == "Yes")%>%
   filter(After_ripening == "Yes") %>%
+  mutate(sowing_time = factor(sowing_time))%>%
+  mutate(sowing_time = fct_relevel(sowing_time, "Immediate", "After_ripening" ))%>%
+  mutate(sowing_time = recode (sowing_time, "Immediate" = "Fresh", "After_ripening" = "After ripened"))%>%
   ggplot(aes(x= mean, y=psib50, color = sowing_time ))+
   geom_point(size = 3)+
   geom_smooth(method = "lm") +
@@ -116,4 +122,5 @@ summary_seedmass %>%
          axis.title.x = element_text (size=14),
          legend.title = element_text(size = 14),
          legend.text = element_text (size =12))+
-  labs (title = "Base Water Potential vs Seed mass", x= "Seed mass (mg)", y = "Base Water Potential (Mpa)")
+  scale_color_manual (name= "Storage treatment", values = c("forestgreen", "gold") ) +
+  labs (title = "Base Water Potential vs Seed mass", x= "Seed mass (mg)",  y = expression(paste(Psi,"b (MPa)")))

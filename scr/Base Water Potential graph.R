@@ -16,17 +16,17 @@ bWP_summary %>%
   ggplot (aes(x=GDD, y= psib50)) + #, color = site
   geom_point(size= 4, shape=21, fill= "deeppink")+
   geom_smooth(method = "lm", se=FALSE, level = 0.9, color ="deeppink" )+
-  geom_text(data= regrpvalues, aes(y= 0.1, x= 1450,  label=lbl))+
+  geom_text(data= regrpvalues, aes(y= 0.1, x= 1450,  label=lbl), size = 5)+
   facet_wrap(~sowing_time)+
-  ggthemes::theme_tufte() + 
+  ggthemes::theme_tufte(base_size = 16) + 
   geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "black")+
   theme (text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL), #hjust = 0.5,
-         plot.title = element_text ( size = 20), #
-         strip.text = element_text (size = 18),
+         plot.title = element_text ( size = 18), #
+         strip.text = element_text (size = 16),
          strip.background =element_rect(fill="white"),
          axis.title.y = element_text (size=14), 
          axis.title.x = element_text (size=14), 
          legend.title = element_text(size = 14),
-         legend.text = element_text (size =12))+
+         legend.text = element_text (size =14))+
   labs(title= "Base water potential per GDD", y = expression(paste(Psi,"b (MPa)")), x= "Growing degree days (ºC)") -> Fig5; Fig5

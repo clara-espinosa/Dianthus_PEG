@@ -44,15 +44,16 @@ villa_clima %>%
   #scale_fill_viridis (discrete=TRUE) +
   #scale_color_viridis (discrete = TRUE) +
   #geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "red") +
-  ggthemes::theme_tufte() + 
+  ggthemes::theme_tufte(base_size = 16) + 
   theme (plot.margin = margin(0, 0, 0, 0, "pt"),
          text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL),
-         plot.title = element_text (size = 16, margin=margin(0,0,0,0)), #hjust = 0.5,
-         axis.title.y = element_text (size=11), 
-         axis.title.x = element_text (size=11), 
-         legend.title = element_text(size =11),
-         legend.text = element_text (size =11)) +
+         plot.title = element_text (size = 20, margin=margin(0,0,0,0)), #hjust = 0.5,
+         axis.title.y = element_text (size=14), 
+         axis.text.y = element_text (size=14), 
+         axis.text.x = element_text (size=14), 
+         legend.title = element_text(size =14),
+         legend.text = element_text (size =14)) +
   labs (title = "A", y= "Temperature (ºC)", x = "Month")-> Fig3A;Fig3A 
 # 
 # first try out to circulat bar plot with coord_polar()
@@ -111,16 +112,18 @@ lm%>%
   geom_point(aes(x=GDD, y=abs_WP, fill=site), size=4, shape=21) +
   scale_fill_manual(name= "Site",values = c( "green3","orange","deepskyblue3")) + #"#551A8B",,
   geom_smooth(aes(x=GDD, y=abs_WP), method = "lm")+
-  annotate(geom="text",x=2050, y=2800,label = "R² = 0.69",fontface="italic")+
-  ggthemes::theme_tufte() + 
+  annotate(geom="text",x=2050, y=2800,label = "R² = 0.69",fontface="italic", size =6)+
+  ggthemes::theme_tufte(base_size = 16) + 
   theme (plot.margin = margin(0,0,0,0, "pt"),
          text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL),
-         plot.title = element_text ( size = 16, margin=margin(0,0,0,0)), #hjust = 0.5,
-         axis.title.y = element_text (size=11), 
-         axis.title.x = element_text (size=11), 
-         legend.title = element_text(size =11),
-         legend.text = element_text (size =11),
+         plot.title = element_text ( size = 20, margin=margin(0,0,0,0)), #hjust = 0.5,
+         axis.title.y = element_text (size=14), 
+         axis.text.y = element_text (size=14), 
+         axis.title.x = element_text (size=14), 
+         axis.text.x = element_text (size=14), 
+         legend.title = element_text(size =14),
+         legend.text = element_text (size =14),
          legend.position= "none") +
   labs (title = "B", y= expression(paste(Sigma," ", Psi," (MPa)")), x = "Growing degree days (ºC)") -> Fig3B;Fig3B
 #y = expression(paste("b (MPa)"))
@@ -133,21 +136,21 @@ ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
   geom_segment(data = pcaVars, aes(x = 0, y = 0, xend = 3*Dim.1, yend = 3*Dim.2)) +
   geom_point(aes(fill = site), size = 4, shape= 21) +
   #geom_label(data = pcaVars, aes(x = 3*Dim.1, y = 3*Dim.2, label = Variable),  show.legend = FALSE, size = 4, position=position_jitter(width=pcaVars$jit,height=pcaVars$jit)) +
-  geom_label_repel(data = pcaVars, aes(x = 3*Dim.1, y = 3*Dim.2, label = Variable),  show.legend = FALSE, size = 4, segment.size= 1,
+  geom_label_repel(data = pcaVars, aes(x = 3*Dim.1, y = 3*Dim.2, label = Variable),  show.legend = FALSE, size = 5, segment.size= 1,
                    point.padding = 0.2, nudge_x = .15, nudge_y = .5,segment.curvature = -1e-20, segment.linetype = 1, segment.color = "red", arrow = arrow(length = unit(0.015, "npc")))+
   #geom_label_repel (data =pcaInds, aes(x=Dim.1, y = Dim.2, label = ID ), show.legend = FALSE, size = 4)+
-  ggthemes::theme_tufte() + 
+  ggthemes::theme_tufte(base_size = 16) + 
   theme(plot.margin = margin(0,0,0,0, "pt"),
         text = element_text(family = "sans"),
-        plot.title = element_text ( size = 16, margin=margin(0,0,0,0)), #hjust = 0.5,
+        plot.title = element_text ( size = 20, margin=margin(0,0,0,0)), #hjust = 0.5,
         legend.title = element_blank(),
         legend.position = "bottom", 
         legend.margin=margin(0, 0, 0, 0),
-        legend.box.margin=margin(-10,-10,-10,-10),
-        legend.text = element_text(size = 11, color = "black", margin=margin(0,0,0,0)),
+        legend.box.margin=margin(-1,-1,-1,-1),
+        legend.text = element_text(size = 14, color = "black", margin=margin(0,0,0,0)),
         panel.background = element_rect(color = "black", fill = NULL),
-        axis.title = element_text(size = 11),
-        axis.text = element_text(size = 11, color = "black")) +
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 14, color = "black")) +
   scale_x_continuous(name = paste("Axis 1 (", round(pca1$eig[1, 2], 0),
                                   "% variance explained)", sep = ""), limits = c(-4,4)) + 
   scale_y_continuous(name = paste("Axis 2 (", round(pca1$eig[2, 2], 0), 

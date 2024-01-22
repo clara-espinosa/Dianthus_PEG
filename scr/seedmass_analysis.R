@@ -89,7 +89,7 @@ summary_seedmass %>%
   facet_wrap(~sowing_time)+
   scale_color_manual(name= "Summit",values = c("green3", "#551A8B","orange",   "deepskyblue3")) +
   #scale_fill_manual(name= "", values = c("green3", "#551A8B","orange",   "deepskyblue3"))+
-  ggthemes::theme_tufte() + 
+  ggthemes::theme_tufte(base_size = 16) + 
   theme (text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL), #hjust = 0.5,
          plot.title = element_text ( size = 20), #
@@ -98,7 +98,7 @@ summary_seedmass %>%
          axis.title.y = element_text (size=14), 
          axis.title.x = element_text (size=14), 
          legend.title = element_text(size = 14),
-         legend.text = element_text (size =12))+
+         legend.text = element_text (size =14))+
   labs (title = "Base Water Potential vs Seed mass", x= "Seed mass (mg)", y = expression(paste(Psi,"b (MPa)")))
 
 summary_seedmass %>%

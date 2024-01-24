@@ -9,12 +9,14 @@ unique(data$ID)
 unique(final_germ$ID)
 data%>%
   group_by(ID, sowing_time, WP_treatment, petri)%>%
-  summarise(germinated = sum(germinated), viable = sum(viable)) %>%
+  summarise(germinated = sum(germinated), viable = min (viable)) %>%
   merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= c("ID"))%>%  #
   #merge(bioclim, by= c("ID")) %>% # C00 not bioclim data so it dissapears
   #mutate(WP_treatment = as.factor(WP_treatment)) %>%
   as.data.frame()->final_germ 
 str(final_germ)
+final_germ%>%
+  summarise(viable = sum(viable))
 
 a <- glmmTMB(cbind(germinated, viable - germinated) ~ WP_treatment* sowing_time + (1|site/ID),  family = binomial, data= final_germ) 
 summary(a) # every thing significant including interaction (check sowing time separately)

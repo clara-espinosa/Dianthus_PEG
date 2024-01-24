@@ -22,9 +22,30 @@ seed_mass %>%
   merge(bioclim, by= c("ID")) %>%
   merge(bWP_summary, by= c("ID"))%>%
   as.data.frame()-> glm
+
 a <- glmmTMB(abs(psib50) ~ weight * sowing_time + (1|site),  family = Gamma(link="log"),  data= glm) #Gamma(link="log")// gaussian
 summary(a)# not significant interaction term , only sowing time (i.e. immediate sowing has higher bWP)   
 # same results without C00
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
+
+a <- glmmTMB(abs(psib50) ~ sowing_time + (1|site),  family = Gamma(link="log"),  data= glm) #Gamma(link="log")// gaussian
+summary(a)# not significant interaction term , only sowing time (i.e. immediate sowing has higher bWP)   
+# same results without C00
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
+
+a <- glmmTMB(weight ~ sowing_time + (1|site),  family = Gamma(link="log"),  data= glm) #Gamma(link="log")// gaussian
+summary(a)# not significant interaction term , only sowing time (i.e. immediate sowing has higher bWP)   
+# same results without C00
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
+
+seed_mass %>%
+  merge(bioclim, by= c("ID")) %>%
+  merge(bWP_summary, by= c("ID"))%>%
+  filter(sowing_time=="Immediate")%>%
+  as.data.frame()-> glm
+
+a <- glmmTMB(abs(psib50) ~ weight + (1|site), family = Gamma(link="log"),  data= glm) #gaussian
+summary(a) # marginal significant effrects of seed weight
 residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
 
 seed_mass %>%
@@ -71,6 +92,12 @@ summary_seedmass %>%
   labs (title = "Seed mass correlation with GDD", y= "Seed mass (mg)", x = "Growing degree days")
 
 # seed mass x Base water potential
+
+regrpvalues2 <- data.frame (sowing_time= c("Fresh", "After ripened"), lbl = c("p = 0.53", "p = 0.058"))
+regrpvalues2 %>%
+  mutate(sowing_time = factor(sowing_time))%>%
+  mutate(sowing_time = fct_relevel(sowing_time, "Fresh", "After ripened" ))-> regrpvalues2
+
 summary_seedmass %>%
   merge(bWP_summary)%>%
   merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= c("ID")) %>%
@@ -88,6 +115,7 @@ summary_seedmass %>%
   #xlim(0.6, 1.7)+
   facet_wrap(~sowing_time)+
   scale_color_manual(name= "Summit",values = c("green3", "#551A8B","orange",   "deepskyblue3")) +
+  geom_text(data= regrpvalues2, aes(y= 0.1, x= 0.62,  label=lbl), size = 5)+
   #scale_fill_manual(name= "", values = c("green3", "#551A8B","orange",   "deepskyblue3"))+
   ggthemes::theme_tufte(base_size = 16) + 
   theme (text = element_text(family = "sans"),

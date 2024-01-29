@@ -1,5 +1,5 @@
 library(tidyverse);library(wesanderson); library (binom) ;library(ggpubr)
-####### FIG 3A germination bars comparing final germination #####
+####### FIG 4A germination bars comparing final germination #####
 # mean final germination x sowing time and WP treatment with binomial errors
 data%>%
   mutate(WP_treatment = factor(WP_treatment))%>%
@@ -33,7 +33,7 @@ data%>%
          legend.position = c(0.82,0.82))+
   labs (tag = "A", title = "Final germination per storage treatment", y= "Final germination proportion", x = "WP treatments (MPa)") -> Fig4A;Fig4A
 
-####### FIG 2B cumulative germination curve with ggplot ##############
+####### FIG 4B cumulative germination curve with ggplot ##############
 # create/extent colorpalette (https://www.datanovia.com/en/blog/easy-way-to-expand-color-palettes-in-r/)
 WPcolors <- wes_palette("Zissou1", 7, type = "continuous")
 
@@ -73,29 +73,5 @@ data %>%
 ggarrange(Fig4A, Fig4B, heights = c(2,3), ncol = 1, nrow = 2)->Fig4;Fig4 
                
                   
-ggsave(filename = "results/figures/Fig2.png", Fig2, path = NULL, 
+ggsave(filename = "results/figures/Fig4.png", Fig2, path = NULL, 
        scale = 1, width = 600, height = 800, units = "mm", dpi = 600)
-
-#### extra ####
-
-#final germination x treatment x ID graph
-x11()
-germination_summary %>%
-  mutate(WP_treatment = factor(treatment))%>%
-  mutate(WP_treatment = fct_relevel(WP_treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
-  merge(bioclim, by = "ID") %>%
-  merge(read.csv("data/Dianthus_header.csv", sep = ";"), by = c("ID", "site")) %>%
-  ggplot() +
-  geom_point(aes(x= treatment, y =germination.mean, color =WP_treatment), size = 3) +
-  #geom_errorbar(aes(x= treatment, ymin = germination.lower, 
-  #ymax = germination.upper, color = WP_treatment),width = 0.2, size =1.2)  +
-  coord_cartesian(ylim = c(0,1))+
-  facet_wrap(~sowing_time)+
-  theme_bw(base_size = 16) +
-  theme (plot.title = element_text ( size = 26), #hjust = 0.5,
-         strip.text = element_text (size = 20),
-         axis.title.y = element_text (size=14), 
-         axis.title.x = element_text (size=14), 
-         legend.title = element_text(size = 14),
-         legend.text = element_text (size =12))+
-  labs (title = "Final germination percentage x plot", y= "Mean Final Germination", x = "WP Treatment") 

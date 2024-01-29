@@ -1,7 +1,7 @@
 library(tidyverse);library(MCMCglmm)
 library(glmmTMB); library (DHARMa) # paquetes para los GLMs
 library(binom);library(effects);library(emmeans)
-
+library (stringr);library (rstatix)
 #### GLM germination analysis ####
 # glm para final germination necesitamos dataframe con semillas germinadas y viables
 # podríamos usar los datos brutos y transformarlos o directamente usar el objeto germ_indices
@@ -78,3 +78,58 @@ c <- glmmTMB(psib50 ~ GDD + (1|site), family = gaussian,  data= glm_af) ###  wit
 summary(c)# significant effect of GDD
 residuals <- simulateResiduals (c) ; plot(residuals)#gaussian family mets assumptions
 
+
+##### seed mass subpopulations variability #####
+read.csv("data/ind_seeds_weight.csv", sep = ",") ->seed_mass
+str(seed_mass)
+seed_mass%>%
+  mutate(ID= as.factor(ID))%>%
+  group_by(ID)%>%
+  get_summary_stats(weight)%>%
+  as.data.frame()-> summary_seedmass
+str(summary_seedmass)
+
+write.csv(summary_seedmass, "results/summary_seed_mass.csv")
+
+# glmm
+str(bWP_summary)
+hist(summary_seedmass$mean)
+seed_mass %>%
+  merge(bioclim, by= c("ID")) %>%
+  merge(bWP_summary, by= c("ID"))%>%
+  as.data.frame()-> glm
+
+a <- glmmTMB(abs(psib50) ~ weight * sowing_time + (1|site),  family = Gamma(link="log"),  data= glm) #Gamma(link="log")// gaussian
+summary(a)# not significant interaction term , only sowing time (i.e. immediate sowing has higher bWP)   
+# same results without C00
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
+
+a <- glmmTMB(abs(psib50) ~ sowing_time + (1|site),  family = Gamma(link="log"),  data= glm) #Gamma(link="log")// gaussian
+summary(a)# not significant interaction term , only sowing time (i.e. immediate sowing has higher bWP)   
+# same results without C00
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
+
+a <- glmmTMB(weight ~ sowing_time + (1|site),  family = Gamma(link="log"),  data= glm) #Gamma(link="log")// gaussian
+summary(a)# not significant interaction term , only sowing time (i.e. immediate sowing has higher bWP)   
+# same results without C00
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
+
+seed_mass %>%
+  merge(bioclim, by= c("ID")) %>%
+  merge(bWP_summary, by= c("ID"))%>%
+  filter(sowing_time=="Immediate")%>%
+  as.data.frame()-> glm
+
+a <- glmmTMB(abs(psib50) ~ weight + (1|site), family = Gamma(link="log"),  data= glm) #gaussian
+summary(a) # marginal significant effrects of seed weight
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions
+
+seed_mass %>%
+  merge(bioclim, by= c("ID")) %>%
+  merge(bWP_summary, by= c("ID"))%>%
+  filter(sowing_time=="After_ripening")%>%
+  as.data.frame()-> glm
+
+a <- glmmTMB(abs(psib50) ~ weight + (1|site), family = Gamma(link="log"),  data= glm) #gaussian
+summary(a) # marginal significant effrects of seed weight
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family DO not mets assumptions

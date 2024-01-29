@@ -1,8 +1,8 @@
 library(tidyverse);library (seedr)
 
-#base water potential
+#FIG 5 base water potential
 
-regrpvalues <- data.frame (sowing_time= c("Fresh", "After ripened"), lbl = c("p = 0.19", "p = 0.04"))
+regrpvalues <- data.frame (sowing_time= c("Fresh", "After ripened"), lbl = c("p = 0.19", "p = 0.04")) # from glm model
 regrpvalues %>%
   mutate(sowing_time = factor(sowing_time))%>%
   mutate(sowing_time = fct_relevel(sowing_time, "Fresh", "After ripened" ))-> regrpvalues

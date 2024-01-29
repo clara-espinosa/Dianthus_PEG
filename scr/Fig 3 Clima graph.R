@@ -1,7 +1,7 @@
 library(tidyverse);library(zoo); library(dplyr);library (lubridate);library(ggpubr)
 library(cowplot);library(patchwork); library(ggrepel)
 
-### FIG mean climograma villa from Penauta, Rabinalto and Solana central ####
+### FIG 3A mean climograma villa from Penauta, Rabinalto and Solana central ####
 read.csv("data/wp_villa_2021_2023.csv", sep = ",") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
@@ -58,7 +58,7 @@ villa_clima %>%
 # 
 # first try out to circulat bar plot with coord_polar()
 
-##### FIG Water potential x GDD #####
+##### FIG 3B Water potential x GDD #####
 read.csv("data/wp_villa_2021_2023.csv", sep = ",") %>%
   mutate(Time = strptime(as.character(Time), "%d/%m/%Y %H:%M"))%>% #specify format of Time variable
   mutate(Time = as.POSIXct(Time, tz = "UTC")) %>% 
@@ -103,7 +103,7 @@ monthly_villa_clima %>%
   as.data.frame() -> lm
 
 summary(lm(abs_WP ~ GDD, data=lm))$adj.r.squared  
-# scatter plot GDD vs abs WP (only growing season)
+# FIG 3B scatter plot GDD vs abs WP (only growing season)
 lm%>%
   mutate(site = fct_relevel(site,
                             "Rabinalto", "Cañada",
@@ -127,7 +127,7 @@ lm%>%
          legend.position= "none") +
   labs (title = "B", y= expression(paste(Sigma," ", Psi," (MPa)")), x = "Growing degree days (ºC)") -> Fig3B;Fig3B
 #y = expression(paste("b (MPa)"))
-### FIG PCA from 78 plots central + iButtons ####
+### FIG 3C PCA from 78 plots central + iButtons ####
 # origin data frame in pca bioclim script
 ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
   coord_fixed() +

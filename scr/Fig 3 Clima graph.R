@@ -49,11 +49,12 @@ villa_clima %>%
          text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL),
          plot.title = element_text (size = 20, margin=margin(0,0,0,0)), #hjust = 0.5,
-         axis.title.y = element_text (size=14), 
-         axis.text.y = element_text (size=14), 
-         axis.text.x = element_text (size=14), 
-         legend.title = element_text(size =14),
-         legend.text = element_text (size =14)) +
+         axis.title.y = element_text (size=13), 
+         axis.text.y = element_text (size=13), 
+         axis.text.x = element_text (size=13), 
+         axis.text = element_text(size = 13, color = "black"),
+         legend.title = element_text(size =13),
+         legend.text = element_text (size =13)) +
   labs (title = "A", y= "Temperature (ºC)", x = "Month")-> Fig3A;Fig3A 
 # 
 # first try out to circulat bar plot with coord_polar()
@@ -111,19 +112,20 @@ lm%>%
   ggplot()+  #abs_WP
   geom_point(aes(x=GDD, y=abs_WP, fill=site), size=4, shape=21) +
   scale_fill_manual(name= "Site",values = c( "green3","orange","deepskyblue3")) + #"#551A8B",,
-  geom_smooth(aes(x=GDD, y=abs_WP), method = "lm")+
+  geom_smooth(aes(x=GDD, y=abs_WP), method = "lm", color = "black")+
   annotate(geom="text",x=2050, y=2800,label = "R² = 0.69",fontface="italic", size =6)+
   ggthemes::theme_tufte(base_size = 16) + 
   theme (plot.margin = margin(0,0,0,0, "pt"),
          text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL),
          plot.title = element_text ( size = 20, margin=margin(0,0,0,0)), #hjust = 0.5,
-         axis.title.y = element_text (size=14), 
-         axis.text.y = element_text (size=14), 
-         axis.title.x = element_text (size=14), 
-         axis.text.x = element_text (size=14), 
-         legend.title = element_text(size =14),
-         legend.text = element_text (size =14),
+         axis.title.y = element_text (size=13), 
+         axis.text.y = element_text (size=13), 
+         axis.title.x = element_text (size=13), 
+         axis.text.x = element_text (size=13), 
+         axis.text = element_text(size = 13, color = "black"),
+         legend.title = element_text(size =13),
+         legend.text = element_text (size =13),
          legend.position= "none") +
   labs (title = "B", y= expression(paste(Sigma," ", Psi," (MPa)")), x = "Growing degree days (ºC)") -> Fig3B;Fig3B
 #y = expression(paste("b (MPa)"))
@@ -147,10 +149,10 @@ ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
         legend.position = "bottom", 
         legend.margin=margin(0, 0, 0, 0),
         legend.box.margin=margin(-1,-1,-1,-1),
-        legend.text = element_text(size = 14, color = "black", margin=margin(0,0,0,0)),
+        legend.text = element_text(size = 13, color = "black", margin=margin(0,0,0,0)),
         panel.background = element_rect(color = "black", fill = NULL),
-        axis.title = element_text(size = 14),
-        axis.text = element_text(size = 14, color = "black")) +
+        axis.title = element_text(size = 13),
+        axis.text = element_text(size = 13, color = "black")) +
   scale_x_continuous(name = paste("Axis 1 (", round(pca1$eig[1, 2], 0),
                                   "% variance explained)", sep = ""), limits = c(-4,4)) + 
   scale_y_continuous(name = paste("Axis 2 (", round(pca1$eig[2, 2], 0), 

@@ -162,7 +162,7 @@ ggplot(pcaInds, aes(x = Dim.1, y = Dim.2)) +
   scale_fill_manual( values = c("green3", "#551A8B","orange",   "deepskyblue3")) -> Fig3C; Fig3C
 
 #### figure combination ####
-# using patchwork
+# using patchwork ##
 design = 
 "AB
 AC"

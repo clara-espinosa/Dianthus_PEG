@@ -4,17 +4,17 @@ library(tidyverse);library(wesanderson); library (binom) ;library(ggpubr)
 data%>%
   mutate(WP_treatment = factor(WP_treatment))%>%
   mutate(WP_treatment = fct_relevel(WP_treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
-  mutate(sowing_time = factor(sowing_time))%>%
-  mutate(sowing_time = fct_relevel(sowing_time, "Immediate", "After_ripening" ))%>%
-  mutate(sowing_time = recode (sowing_time, "Immediate" = "Fresh", "After_ripening" = "After ripened"))%>%
-  select(sowing_time, ID, WP_treatment, petri,viable,  days, germinated)%>%
-  group_by(sowing_time, WP_treatment, days)%>% #ID,
+  mutate(storage_treatment = factor(storage_treatment))%>%
+  mutate(storage_treatment = fct_relevel(storage_treatment, "Fresh_seeds", "After_ripened" ))%>%
+  mutate(storage_treatment = recode (storage_treatment, "Fresh_seeds" = "Fresh", "After_ripened" = "After ripened"))%>%
+  select(storage_treatment, ID, WP_treatment, petri,viable,  days, germinated)%>%
+  group_by(storage_treatment, WP_treatment, days)%>% #ID,
   summarise(viable = sum(viable), germinated = sum(germinated))%>%
-  group_by(sowing_time, WP_treatment)%>%
+  group_by(storage_treatment, WP_treatment)%>%
   summarise(seeds_germ= sum(germinated),
          viable = last(viable))%>%
   mutate (binom.confint(seeds_germ, viable, methods = "wilson")) %>%
-  ggplot( aes(WP_treatment, mean, fill=sowing_time))+
+  ggplot( aes(WP_treatment, mean, fill=storage_treatment))+
   geom_col(position = position_dodge(0.7), width = 0.75, color = "black") +
   ylim(0,1)+
   geom_errorbar(aes(WP_treatment, mean, ymin = lower, ymax = upper), 
@@ -40,18 +40,18 @@ WPcolors <- wes_palette("Zissou1", 7, type = "continuous")
 data %>%
   mutate(WP_treatment = factor(WP_treatment))%>%
   mutate(WP_treatment = fct_relevel(WP_treatment,"0", "-0.2", "-0.4", "-0.6", "-0.8", "-1", "-1.2" ))%>%
-  mutate(sowing_time = factor(sowing_time))%>%
-  mutate(sowing_time = fct_relevel(sowing_time, "Immediate", "After_ripening" ))%>%
-  mutate(sowing_time = recode (sowing_time, "Immediate" = "Fresh", "After_ripening" = "After ripened"))%>%
-  select(sowing_time, ID, WP_treatment, petri,viable,  days, germinated)%>%
-  group_by(sowing_time, WP_treatment, days)%>% #ID,
+  mutate(storage_treatment = factor(storage_treatment))%>%
+  mutate(storage_treatment = fct_relevel(storage_treatment, "Fresh_seeds", "After_ripened" ))%>%
+  mutate(storage_treatment = recode (storage_treatment, "Fresh_seeds" = "Fresh", "After_ripened" = "After ripened"))%>%
+  select(storage_treatment, ID, WP_treatment, petri,viable,  days, germinated)%>%
+  group_by(storage_treatment, WP_treatment, days)%>% #ID,
   summarise(viable = sum(viable), germinated = sum(germinated))%>%
   mutate(cumsum= cumsum(germinated),
          viable = last(viable) )%>%
   mutate(germPER = (cumsum/viable))%>%
   ggplot(aes(x=days, y=germPER, group = WP_treatment, color= WP_treatment))+
   geom_line(size = 2) +
-  facet_wrap(~sowing_time)+
+  facet_wrap(~storage_treatment)+
   scale_color_manual(name = "WP treatments (MPa)", values = WPcolors, 
                      guide = guide_legend (title.position = "top",direction = "horizontal", nrow = 1)) +
   coord_cartesian(ylim = c(0,1))+

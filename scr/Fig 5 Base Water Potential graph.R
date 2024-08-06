@@ -2,26 +2,27 @@ library(tidyverse);library (seedr)
 
 #FIG 5 base water potential
 
-regrpvalues <- data.frame (sowing_time= c("Fresh", "After ripened"), lbl = c("p = 0.19", "p = 0.04")) # from glm model
+regrpvalues <- data.frame (storage_treatment= c("Fresh", "After ripened"), lbl = c("p = 0.19", "p = 0.04")) # from glm model
 regrpvalues %>%
-  mutate(sowing_time = factor(sowing_time))%>%
-  mutate(sowing_time = fct_relevel(sowing_time, "Fresh", "After ripened" ))-> regrpvalues
+  mutate(storage_treatment = factor(storage_treatment))%>%
+  mutate(storage_treatment = fct_relevel(storage_treatment, "Fresh", "After ripened" ))-> regrpvalues
 bWP_summary %>%
   merge(bioclim, by= c("ID")) %>%
   merge(summary_seedmass, by= c("ID"))%>%
+  mutate(psib50 = ifelse( psib50 > 0, 0, psib50))%>%
   #merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= "ID")%>%
-  mutate(sowing_time = factor(sowing_time))%>%
-  mutate(sowing_time = recode (sowing_time, "Immediate" = "Fresh", "After_ripening" = "After ripened"))%>%
-  mutate(sowing_time = fct_relevel(sowing_time, "Fresh", "After ripened" ))%>%
-  ggplot (aes(x=GDD, y= psib50, fill= sowing_time, color = sowing_time)) + #, color = site
+  mutate(storage_treatment = factor(storage_treatment))%>%
+  mutate(storage_treatment = recode (storage_treatment, "Fresh_seeds" = "Fresh", "After_ripened" = "After ripened"))%>%
+  mutate(storage_treatment = fct_relevel(storage_treatment, "Fresh", "After ripened" ))%>%
+  ggplot (aes(x=GDD, y= psib50, fill= storage_treatment), color = "black") + #, color = site
   geom_point(size= 4, shape=21)+
-  geom_smooth(method = "lm", se=FALSE, level = 0.9)+
+  geom_smooth(method = "lm", se=FALSE, level = 0.9, color = "black")+
   scale_fill_manual (name= "Storage treatment", values = c("forestgreen", "gold") ) +
   scale_color_manual (name= "Storage treatment", values = c("forestgreen", "gold") ) +
   geom_text(data= regrpvalues, aes(y= 0.1, x= 1550,  label=lbl), color= "black", size = 5)+
-  facet_wrap(~sowing_time)+
+  facet_wrap(~storage_treatment)+
   ggthemes::theme_tufte(base_size = 16) + 
-  geom_hline(yintercept=0, linetype ="dashed", size =1, colour = "black")+
+  geom_hline(yintercept=0, linetype ="dashed", linewidth =1, colour = "black")+
   theme (text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL), #hjust = 0.5,
          plot.title = element_text ( size = 18), #

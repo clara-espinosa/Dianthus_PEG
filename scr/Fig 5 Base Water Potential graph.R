@@ -2,7 +2,7 @@ library(tidyverse);library (seedr)
 
 #FIG 5 base water potential
 
-regrpvalues <- data.frame (storage_treatment= c("Fresh", "After ripened"), lbl = c("p = 0.19", "p = 0.04")) # from glm model
+regrpvalues <- data.frame (storage_treatment= c("Fresh", "After ripened"), lbl = c("p = 0.22", "p = 0.03")) # from glm model
 regrpvalues %>%
   mutate(storage_treatment = factor(storage_treatment))%>%
   mutate(storage_treatment = fct_relevel(storage_treatment, "Fresh", "After ripened" ))-> regrpvalues

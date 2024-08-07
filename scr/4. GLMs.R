@@ -5,18 +5,7 @@ library (stringr);library (rstatix)
 library(emmeans) # v. 1.7.0
 library(magrittr) # v. 2.0.1
 
-# seed mass data ####
-read.csv("data/ind_seeds_weight.csv", sep = ",") %>% # -> seed_mass
-  mutate(ID= as.factor(ID))%>%
-  group_by(ID)%>%
-  get_summary_stats(weight)%>%
-  as.data.frame()-> summary_seedmass
-str(summary_seedmass)
-
-write.csv(summary_seedmass, "results/summary_seed_mass.csv")
-t.test(weight~storage_treatment, data = seed_mass) # no significant differences between storage treatments
-
-#### GLM germination analysis ####
+###################################### GLMM germination analysis #######################################
 # all subpopulations ####
 # glm para final germination necesitamos dataframe con semillas germinadas y viables
 # podríamos usar los datos brutos y transformarlos o directamente usar el objeto germ_indices
@@ -58,9 +47,7 @@ pairs(EMM, simple = "WP_treatment")    # compare WP_treatment for each sowing ti
 pairs(EMM, simple = "storage_treatment")     # compare sowing time for each treatment 
 
 
-##### bWP glm analysis ####
-str(bWP_summary) # summary object from seedr_analisis script
-# psib50 corresponds with base water potential of the 50th percentil
+###################################### bWP glm analysis ###############################################
 # all subpopulations ####
 bWP_summary %>%
   merge(bioclim, by= c("ID")) %>% # merge data from ibuttons and microlog sensors from climate handling script
@@ -154,7 +141,7 @@ emmeans (d, "storage_treatment")
 emmeans (d, "GDD")
 
 emmip(d, storage_treatment ~ GDD, cov.reduce = range)
-##### seed mass subpopulations as a covariate of GLMM models BWP #####
+############################# seed mass subpopulations as a covariate of GLMM models BWP ##############
 read.csv("data/ind_seeds_weight.csv", sep = ",") ->seed_mass
 str(seed_mass)
 seed_mass%>%
@@ -319,7 +306,7 @@ glm%>%
          legend.text = element_text (size =14), 
          legend.position = "none")
 
-#### seed mass subpopulations as a covariate of GLMMs models germinatin ####
+############################ seed mass subpopulations as a covariate of GLMMs models germination ######
 final_germ 
 a <- glmmTMB(cbind(germinated, viable - germinated) ~ WP_treatment* storage_treatment + (1|Site/ID),  family = binomial, data= final_germ) 
 summary(a) # every thing significant including interaction (check sowing time separately)

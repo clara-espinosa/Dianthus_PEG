@@ -1,7 +1,7 @@
 library(tidyverse);library(zoo);library(dplyr)
 library (lubridate);library(ggrepel)
 
-###### PCA 80 IBUTTONS + microlog #############
+###### PCA 80 IBUTTONS + Microlog data #############
 
 # indices calculation (80 plots for PCA)
 read.csv("data/temperature_ibuttons.csv", sep =";") %>%

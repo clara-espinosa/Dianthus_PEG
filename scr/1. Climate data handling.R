@@ -128,7 +128,7 @@ read.csv("data/wp_villa_2020_2024.csv", sep =",") %>%
   filter((Month < 10 & Month > 6))%>% # change month 6 or 7 depending if we focus on july or august
   group_by(Site, Micro, Year, ID, Hour = lubridate::floor_date(Time, "hour")) %>%
   summarise(WP = mean (WP), n = length(Time)) %>% # mean WP value x day
-  mutate(minBWP = ifelse(WP<=3.5, 1, 0))%>%
+  mutate(minBWP = ifelse(WP<=3.5, 1, 0))%>% # WP values in bar 3.5 bars = -0.35 Mpa
   filter((minBWP>0))%>%
   group_by(Site, ID, Year)%>%
   summarise(minBWP_date = first(Hour))-> minBWP_date
@@ -144,7 +144,7 @@ read.csv("data/wp_villa_2020_2024.csv", sep =",") %>%
   filter((Month < 10 & Month > 6))%>%# change month 6 or 7 depending if we focus on july or august
   group_by(Site, Micro, Year, ID, Hour = lubridate::floor_date(Time, "hour")) %>%
   summarise(WP = mean (WP), n = length(Time)) %>% # mean WP value x day
-  mutate(maxBWP = ifelse(WP<=5.5, 1, 0))%>%
+  mutate(maxBWP = ifelse(WP<=5.5, 1, 0))%>%# WP values in bar 5.5 bars = -0.55 Mpa
   filter((maxBWP>0))%>%
   group_by(Site, ID, Year)%>%
   summarise(maxBWP_date = first(Hour))->maxBWP_date

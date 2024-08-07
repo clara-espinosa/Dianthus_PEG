@@ -50,7 +50,7 @@ data %>%
          viable = last(viable) )%>%
   mutate(germPER = (cumsum/viable))%>%
   ggplot(aes(x=days, y=germPER, group = WP_treatment, color= WP_treatment))+
-  geom_line(size = 2) +
+  geom_line(linewidth = 2) +
   facet_wrap(~storage_treatment)+
   scale_color_manual(name = "WP treatments (MPa)", values = WPcolors, 
                      guide = guide_legend (title.position = "top",direction = "horizontal", nrow = 1)) +
@@ -71,7 +71,3 @@ data %>%
   labs (tag = "B", title = "Cumulative germination curves", y= "Germination proportion", x = "Days")->Fig4B;Fig4B
 
 ggarrange(Fig4A, Fig4B, heights = c(2,3), ncol = 1, nrow = 2)->Fig4;Fig4 
-               
-                  
-ggsave(filename = "results/figures/Fig4.png", Fig2, path = NULL, 
-       scale = 1, width = 600, height = 800, units = "mm", dpi = 600)

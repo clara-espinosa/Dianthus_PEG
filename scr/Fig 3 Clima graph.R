@@ -12,7 +12,6 @@ read.csv("data/wp_villa_2020_2024.csv", sep = ",") %>%
   mutate(Hour = lubridate::hour(Time)) %>% 
   dplyr::filter(Micro == "central") %>% # keep logger from center of the plot
   filter(!Site =="Canada") %>% # logger with broken sensors
-  mutate(Site = fct_recode(Site, "Penouta" = "Penauta"))%>%
   mutate (Site_year = paste (Site, Year)) %>%
   mutate(WP = rowMeans((cbind(wp1, wp2)))) %>% # calculate mean value between 3 gypsum sensors
   dplyr::select(! c(wp1, wp2)) %>% 
@@ -61,7 +60,7 @@ read.csv("data/wp_villa_2020_2024.csv", sep = ",") %>%
   #dplyr::filter(Micro == "central") %>%
   #filter(!Site =="Cañada") %>%
   filter (! (Year %in% 2021 & Month < 7))%>% # remove missing june days of 2021
-  mutate(Site = fct_recode(Site, "Penouta" = "Penauta"))%>%
+  #mutate(Site = fct_recode(Site, "Penouta" = "Penauta"))%>%
   mutate (Site_year = paste (Site, Year)) %>%
   mutate(WP = rowMeans((cbind(wp1, wp2)))) %>% 
   dplyr::select(! c(wp1, wp2)) %>% 

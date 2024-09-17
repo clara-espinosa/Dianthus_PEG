@@ -62,6 +62,11 @@ summary(a)# significant interaction term suggest analyzing both sowing times sep
           # same results without B00
 residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family mets assumptions
 
+# effect of storage treatment in base water potential
+a <- glmmTMB(psib50 ~ storage_treatment+ (1|Site) , family = gaussian,  data= glm) #+ (1|site)
+summary(a)# significant effect of storage treatment
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family mets assumptions
+
 glm %>%
   filter(storage_treatment == "Fresh_seeds")%>%
   as.data.frame()-> glm_im
@@ -85,6 +90,11 @@ unique(glm_both $Site)
 
 a <- glmmTMB(psib50 ~ GDD * storage_treatment+ (1|Site) , family = gaussian,  data= glm_both ) #
 summary(a)# significant interaction term suggest analyzing both sowing times separately
+
+# effect of storage treatment in base water potential
+a <- glmmTMB(psib50 ~ storage_treatment+ (1|Site) , family = gaussian,  data= glm_both) #+ (1|site)
+summary(a)# significant effect of storage treatment
+residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family mets assumptions
 
 residuals <- simulateResiduals (a) ; plot(residuals)#gaussian family do not mets assumptions
 # PROBLEM to use gamma family, needed value different than 0, if we change that manually nothing becomes significant

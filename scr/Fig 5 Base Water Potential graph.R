@@ -10,7 +10,6 @@ bWP_summary %>%
   merge(bioclim, by= c("ID")) %>%
   merge(summary_seedmass, by= c("ID"))%>%
   mutate(psib50 = ifelse( psib50 > 0, 0, psib50))%>%
-  #merge(read.csv("data/Dianthus_header.csv", sep = ";"), by= "ID")%>%
   mutate(storage_treatment = factor(storage_treatment))%>%
   mutate(storage_treatment = recode (storage_treatment, "Fresh_seeds" = "Fresh", "After_ripened" = "After ripened"))%>%
   mutate(storage_treatment = fct_relevel(storage_treatment, "Fresh", "After ripened" ))%>%
@@ -22,7 +21,6 @@ bWP_summary %>%
   geom_text(data= regrpvalues, aes(y= 0.1, x= 1550,  label=lbl), color= "black", size = 4)+
   facet_wrap(~storage_treatment)+
   theme_classic(base_size = 12) +
-  #ggthemes::theme_tufte(base_size = 16) + 
   geom_hline(yintercept=0, linetype ="dashed", linewidth =1, colour = "black")+
   theme (text = element_text(family = "sans"),
          panel.background = element_rect(color = "black", fill = NULL), #hjust = 0.5,

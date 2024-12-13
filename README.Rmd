@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 [![DOI](add zenodo link once paper is accepted)
 
-![Dianthus langeanus Wilk. (Caryophyllaceae)](Dianthuslangeanus.jpg)
+![Dianthus langeanus Wilk. (Caryophyllaceae)](Dianthuslangeanus.png)
 
 # Functional intraspecific variation in the base water potential for seed germination along soil microclimatic gradients
 
@@ -28,7 +28,7 @@ The following materials are available in the folders of this repository:
 [Individal Dianthus seed weigths at each subpopulation](https://github.com/clara-espinosa/Dianthus_PEG/blob/main/data/ind_seeds_weight.csv),
 bioclimatic data;  [Temperature and Water potential 4 year records or the study area](https://github.com/clara-espinosa/Dianthus_PEG/blob/main/data/wp_villa_2020_2024.csv) as well as 
 [iButtons registered temperatures foer each subpopulation](https://github.com/clara-espinosa/Dianthus_PEG/blob/main/data/temperature_ibuttons.csv) 
-It also includes the [Subpopulations coordinates table](https://github.com/clara-espinosa/Dianthus_PEG/blob/main/data/ibuttons%20plots%20coordinates.csv) and the [Efects sizes from MCMC-GLMM models]
+It also includes the [Subpopulations coordinates table](https://github.com/clara-espinosa/Dianthus_PEG/blob/main/data/ibuttons%20plots%20coordinates.csv).
 * `doc` Manuscript submitted to Functional Ecology.
 * `results` Output of the `R` scripts, including figures, tables and supplementary information.
 * `src` Scripts in `R` language used to clean the raw data, perform the analyses of the manuscript and create the figures.

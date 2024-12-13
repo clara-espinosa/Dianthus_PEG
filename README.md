@@ -4,7 +4,7 @@ README.md
 \[![DOI](add%20zenodo%20link%20once%20paper%20is%20accepted)
 
 <figure>
-<img src="Dianthuslangeanus.jpg"
+<img src="Dianthuslangeanus.png"
 alt="Dianthus langeanus Wilk. (Caryophyllaceae)" />
 <figcaption aria-hidden="true">Dianthus langeanus Wilk.
 (Caryophyllaceae)</figcaption>
@@ -38,8 +38,7 @@ The following materials are available in the folders of this repository:
   as well as [iButtons registered temperatures foer each
   subpopulation](https://github.com/clara-espinosa/Dianthus_PEG/blob/main/data/temperature_ibuttons.csv)
   It also includes the [Subpopulations coordinates
-  table](https://github.com/clara-espinosa/Dianthus_PEG/blob/main/data/ibuttons%20plots%20coordinates.csv)
-  and the \[Efects sizes from MCMC-GLMM models\]
+  table](https://github.com/clara-espinosa/Dianthus_PEG/blob/main/data/ibuttons%20plots%20coordinates.csv).
 - `doc` Manuscript submitted to Functional Ecology.
 - `results` Output of the `R` scripts, including figures, tables and
   supplementary information.

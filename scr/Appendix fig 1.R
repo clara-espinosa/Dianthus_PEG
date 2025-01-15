@@ -63,8 +63,14 @@ data %>%
          legend.box.margin=margin(0,0,0,0),
          legend.position = "bottom")+
   labs (tag = "", title = "Subpopulations cumulative germination curves", 
-        subtitle= "                Fresh seeds                         After ripened seeds", 
+        subtitle= "                  Fresh seeds                              After ripened seeds", 
         y= "Germination proportion", x = "Days") -> FigS1;FigS1
 library(cowplot)
-ggdraw(FigS1) +
-  draw_line(x= c(0,10), y = c(10,1), lwd = 5)
+ggdraw()+
+  draw_label(size= 8,label ="Functional intraspecific variation in the base water potential for seed germination along soil microclimatic gradients. 
+             Espinosa del Alba, C., Cruz-Tejada, D., Jiménez-Alfaro, B., and E. Fernández-Pascual. (2025). Functional Ecology.")->label
+
+plot_grid(FigS1,label,  ncol = 1, align = "v", rel_heights = c(12,1))->FigS1;FigS1
+
+ggsave(filename = "FEEspinosadelAlbaSF1.png", plot =FigS1, path = "results/supplementary", 
+       device = "png", dpi = 600)
